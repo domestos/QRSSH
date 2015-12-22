@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">QRSSH</string>
+    <string name="action_settings">Settings</string>
+    <string name="etAlias">Alies</string>
+    <string name="hintHost">Host</string>
+    <string name="hintPort">Port</string>
+    <string name="hintUsername">Username</string>
+    <string name="hintPassword">Password</string>
+</resources>
