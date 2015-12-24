@@ -11,7 +11,7 @@ public class Host {
     private String password;
     private int port;
     private String os;
-
+    public Host(){}
     public Host(String alias, String host, int port, String username, String password,  String os) {
         this.alias = alias;
         this.host = host;
