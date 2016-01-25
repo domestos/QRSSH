@@ -1,4 +1,4 @@
-package com.example.vpelenskyi.qrssh;
+package com.example.vpelenskyi.qrssh.host;
 
 /**
  * Created by v.pelenskyi on 23.12.2015.

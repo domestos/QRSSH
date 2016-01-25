@@ -19,7 +19,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".NewHost"/>
+        <activity android:name=".host.NewHost"/>
     </application>
 
 </manifest>

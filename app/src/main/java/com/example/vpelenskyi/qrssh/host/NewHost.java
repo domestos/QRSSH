@@ -1,9 +1,8 @@
-package com.example.vpelenskyi.qrssh;
+package com.example.vpelenskyi.qrssh.host;
 
 import android.content.ContentValues;
-import android.content.Context;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.ActionBar;
@@ -14,22 +13,26 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.vpelenskyi.qrssh.R;
+import com.example.vpelenskyi.qrssh.database.Data;
+
 /**
  * Created by v.pelenskyi on 22.12.2015.
  */
 public class NewHost extends AppCompatActivity implements View.OnClickListener {
 
     private String TAG = "QRSSH_LOG";
-    private TextInputLayout tilAlias, tilHost, tilPort, tilUsername, tilPassword;
+
     private EditText alias, host, port, username, password;
     private Button btnSaveHost;
     private String os = "";
-    private HostDB hodtDB;
+    Data db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.new_host_activity);
+
 
 
         // TOOLBAR
@@ -43,34 +46,28 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
         // INIT TIL
         intTextInputLayout();
 
-        // INIT DB
-        hodtDB = new HostDB(this, "hosts", null, 1);
-
         //CLICK BUTTON
-
         btnSaveHost = (Button) findViewById(R.id.btnSaveHost);
         btnSaveHost.setOnClickListener(this);
 
     }
 
+
     private void addHost() {
-        ContentValues cv = new ContentValues();
-        SQLiteDatabase db = hodtDB.getWritableDatabase();
-
-        cv.put("alias_db", alias.getText().toString());
-        cv.put("host_db", host.getText().toString());
-        cv.put("port_db", Integer.valueOf(port.getText().toString()));
-        cv.put("username_db", username.getText().toString());
-        cv.put("password_db", password.getText().toString());
-
-        long rowID = db.insert("hosts", null, cv);
-        Log.d(TAG, "row inserted, ID = " + rowID);
-
-        Toast.makeText(getApplicationContext(), cv.toString(), Toast.LENGTH_SHORT).show();
-
+        db = new Data(this);
+        db.open();
+        long l = db.insertHost(
+                alias.getText().toString(),
+                host.getText().toString(),
+                Integer.valueOf(port.getText().toString()),
+                username.getText().toString(),
+                password.getText().toString());
+        db.close();
+        Log.i(TAG, "insert : " + l);
     }
 
     private void intTextInputLayout() {
+        TextInputLayout tilAlias, tilHost, tilPort, tilUsername, tilPassword;
 
         tilAlias = (TextInputLayout) findViewById(R.id.aliasInputLayout);
         alias = (EditText) tilAlias.findViewById(R.id.alias);
@@ -100,31 +97,4 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
         onBackPressed();
     }
 
-    class HostDB extends SQLiteOpenHelper {
-
-        public HostDB(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
-            super(context, name, factory, version);
-        }
-
-        @Override
-        public void onCreate(SQLiteDatabase db) {
-            Log.i(TAG, "-- creat date base --");
-            db.execSQL(
-
-                    "CREATE TABLE hosts ("
-                            + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                            + "alias_db TEXT,"
-                            + "host_db TEXT,"
-                            + "port_db INTEGER,"
-                            + "username_db TEXT,"
-                            + "password_db TEXT"
-                            + ");"
-            );
-        }
-
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            Log.i(TAG, "-- upgate date base --");
-        }
-    }
 }
