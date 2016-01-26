@@ -50,6 +50,13 @@ public class Data {
     public Cursor getAllData() {
         return db.query(DB_TABLE, null, null, null, null, null, null);
     }
+    public void deleteItem(long id){
+        Log.i("test", "i get id" + id);
+        String s = COLUMN_ID + " =" + id;
+        Log.i("test", "qvery" + s);
+
+    }
+
 
     public long insertHost(String alias, int os, String host, int port, String user, String pass) {
         ContentValues cv = new ContentValues();
@@ -66,6 +73,11 @@ public class Data {
         // cv.clear();
         return rowID;
     }
+
+    public void deleRec(long id) {Log.i("test",""+id);
+
+    }
+
 
     class DBHelpelr extends SQLiteOpenHelper {
         private final String DB_CREATE = "CREATE TABLE " + DB_TABLE + " ( " +

@@ -10,9 +10,9 @@
         android:orientation="horizontal">
 
         <TextView
-            android:layout_margin="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="10dp"
             android:text="select OS" />
 
         <RadioGroup
@@ -24,12 +24,12 @@
 
             <RadioButton
 
-                android:checked="true"
                 android:id="@+id/rbWindows"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
+                android:checked="true"
                 android:text="windows" />
 
             <RadioButton
@@ -65,7 +65,8 @@
                 android:id="@+id/alias"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/etAlias" />
+                android:hint="@string/etAlias"
+                android:singleLine="true" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -78,7 +79,8 @@
                 android:id="@+id/host"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/hintHost" />
+                android:hint="@string/hintHost"
+                android:singleLine="true" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -89,9 +91,11 @@
 
             <EditText
                 android:id="@+id/port"
+                android:inputType="none"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/hintPort" />
+                android:hint="@string/hintPort"
+                android:singleLine="true" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -105,7 +109,8 @@
                 android:id="@+id/username"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/hintUsername" />
+                android:hint="@string/hintUsername"
+                android:singleLine="true" />
         </android.support.design.widget.TextInputLayout>
 
         <android.support.design.widget.TextInputLayout
@@ -117,7 +122,9 @@
                 android:id="@+id/password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/hintPassword" />
+                android:hint="@string/hintPassword"
+                android:password="true"
+                android:singleLine="true" />
         </android.support.design.widget.TextInputLayout>
 
 
