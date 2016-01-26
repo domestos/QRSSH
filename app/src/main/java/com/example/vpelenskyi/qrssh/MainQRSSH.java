@@ -1,19 +1,28 @@
 package com.example.vpelenskyi.qrssh;
 
+import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.drawable.Icon;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import com.example.vpelenskyi.qrssh.database.Data;
+import com.example.vpelenskyi.qrssh.host.Host;
 import com.example.vpelenskyi.qrssh.host.NewHost;
 
 public class MainQRSSH extends AppCompatActivity {
@@ -22,7 +31,9 @@ public class MainQRSSH extends AppCompatActivity {
     Data db;
     Cursor cursor;
     TextView tvCount;
+    long os;
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,11 +44,16 @@ public class MainQRSSH extends AppCompatActivity {
         cursor = db.getAllData();
         startManagingCursor(cursor);
 
-        String[] from = new String[]{db.COLUMN_ALIAS};
-        int[] to = new int[]{R.id.itemText};
+
+        //   ImageView img = (ImageView) findViewById(R.id.itemImeg);
+        //    img.setImageResource(R.drawable.ubuntu);
+
+        String[] from = new String[]{db.COLUMN_ALIAS, db.COLUMN_OS, db.COLUMN_OS};
+        int[] to = new int[]{R.id.itemText, R.id.tvOS, R.id.itemImeg};
 
         //SIMPLE CURSOR ADAPTER
-        SimpleCursorAdapter scAdapter = new SimpleCursorAdapter(this, R.layout.item, cursor, from, to);
+        SimpleCursorAdapter scAdapter = new MySimlpeCursorAdapte(this, R.layout.item, cursor, from, to);
+        //new SimpleCursorAdapter(this, R.layout.item, cursor, from, to);
 
         //LIST VIEW
         listView = (ListView) findViewById(R.id.lvHost);
@@ -45,7 +61,7 @@ public class MainQRSSH extends AppCompatActivity {
 
         //COUNT VIEW TEXT
         tvCount = (TextView) findViewById(R.id.tvConuts);
-        tvCount.setText("counts host: "+cursor.getCount());
+        tvCount.setText("counts host: " + cursor.getCount());
 
         //  TOOLBAR
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -88,5 +104,53 @@ public class MainQRSSH extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    public class MySimlpeCursorAdapte extends SimpleCursorAdapter {
+
+        public MySimlpeCursorAdapte(Context context, int layout, Cursor c, String[] from, int[] to) {
+            super(context, layout, c, from, to);
+        }
+
+        @Override
+        public void setViewImage(ImageView v, String value) {
+
+            switch (Integer.parseInt(value)) {
+                case Host.OS_UBUNTU:
+                    value = String.valueOf(R.drawable.ubuntu);
+                    break;
+                case Host.OS_WINDOWS:
+                    value = String.valueOf(R.drawable.windows);
+                    break;
+                default:
+                    value = String.valueOf(R.drawable.windows);
+                    break;
+            }
+
+          //  Log.i("test", "" + value);
+            super.setViewImage(v, value);
+        }
+
+        @Override
+        public void setViewText(TextView v, String text) {
+            if(v.getId() == R.id.tvOS){
+                switch (Integer.parseInt(text)){
+                    case Host.OS_UBUNTU:
+                        text = "ubuntu";
+                        break;
+                    case Host.OS_WINDOWS:
+                        text = "windows";
+                        break;
+
+                }
+                Log.i("test", "" + text);
+
+            }
+            super.setViewText(v, text);
+
+
+        }
+
     }
 }
