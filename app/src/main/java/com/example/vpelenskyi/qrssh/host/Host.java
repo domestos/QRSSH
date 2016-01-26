@@ -5,14 +5,22 @@ package com.example.vpelenskyi.qrssh.host;
  */
 public class Host {
 
+
+    public static final int OS_WINDOWS = 0;
+    public static final int OS_UBUNTU = 1;
+
+
     private String alias;
     private String host;
     private String username;
     private String password;
     private int port;
     private String os;
-    public Host(){}
-    public Host(String alias, String host, int port, String username, String password,  String os) {
+
+    public Host() {
+    }
+
+    public Host(String alias, String host, int port, String username, String password, String os) {
         this.alias = alias;
         this.host = host;
         this.username = username;

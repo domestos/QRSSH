@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.example.vpelenskyi.qrssh.R;
@@ -25,7 +27,8 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
 
     private EditText alias, host, port, username, password;
     private Button btnSaveHost;
-    private String os = "";
+    private RadioGroup rgOS;
+    private RadioButton rbWindows, rbUbuntu;
     Data db;
 
     @Override
@@ -34,13 +37,11 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
         setContentView(R.layout.new_host_activity);
 
 
-
         // TOOLBAR
         ActionBar toolbar = getSupportActionBar();
         toolbar.setDisplayHomeAsUpEnabled(true);
         toolbar.setHomeButtonEnabled(true);
         toolbar.setDisplayShowHomeEnabled(true);
-
         toolbar.setTitle("Add New HOST");
 
         // INIT TIL
@@ -49,15 +50,28 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
         //CLICK BUTTON
         btnSaveHost = (Button) findViewById(R.id.btnSaveHost);
         btnSaveHost.setOnClickListener(this);
-
+        rgOS = (RadioGroup) findViewById(R.id.rgOS);
+        rbWindows = (RadioButton) findViewById(R.id.rbWindows);
+        rbUbuntu = (RadioButton) findViewById(R.id.rbUbntu);
     }
 
+    public int chekedOS() {
+        switch (rgOS.getCheckedRadioButtonId()) {
+            case R.id.rbWindows:
+                return Host.OS_WINDOWS;
+            case R.id.rbUbntu:
+                return Host.OS_UBUNTU;
+            default:
+                return Host.OS_WINDOWS;
+        }
+    }
 
     private void addHost() {
         db = new Data(this);
         db.open();
         long l = db.insertHost(
                 alias.getText().toString(),
+                chekedOS(),
                 host.getText().toString(),
                 Integer.valueOf(port.getText().toString()),
                 username.getText().toString(),
@@ -65,6 +79,7 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
         db.close();
         Log.i(TAG, "insert : " + l);
     }
+
 
     private void intTextInputLayout() {
         TextInputLayout tilAlias, tilHost, tilPort, tilUsername, tilPassword;
