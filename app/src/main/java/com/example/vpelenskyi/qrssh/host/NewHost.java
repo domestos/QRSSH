@@ -1,19 +1,17 @@
 package com.example.vpelenskyi.qrssh.host;
 
-import android.content.ContentValues;
-import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.Toast;
+
 
 import com.example.vpelenskyi.qrssh.R;
 import com.example.vpelenskyi.qrssh.database.Data;
@@ -66,18 +64,49 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
         }
     }
 
+    private boolean validation() {
+        if (TextUtils.isEmpty(alias.getText().toString().trim())) {
+            alias.setError("can't be empty");
+            return false;
+        }
+        if (TextUtils.isEmpty(host.getText().toString().trim())) {
+            host.setError("can't be empty");
+            return false;
+        }
+        if (TextUtils.isEmpty(port.getText().toString().trim())) {
+            port.setError("can't be empty\n usually default port  uses 22 ");
+            return false;
+        }
+        if (TextUtils.isEmpty(username.getText().toString().trim())) {
+            username.setError("can't be empty");
+            return false;
+        }
+        if (TextUtils.isEmpty(password.getText().toString().trim())) {
+            password.setError("can't be empty");
+            return false;
+        }
+
+        return true;
+    }
+
     private void addHost() {
-        db = new Data(this);
-        db.open();
-        long l = db.insertHost(
-                alias.getText().toString(),
-                chekedOS(),
-                host.getText().toString(),
-                Integer.valueOf(port.getText().toString()),
-                username.getText().toString(),
-                password.getText().toString());
-        db.close();
-        Log.i(TAG, "insert : " + l);
+        if (validation()) {
+
+            db = new Data(this);
+            db.open();
+            long l = db.insertHost(
+                    alias.getText().toString(),
+                    chekedOS(),
+                    host.getText().toString(),
+                    Integer.valueOf(port.getText().toString()),
+                    username.getText().toString(),
+                    password.getText().toString());
+            db.close();
+            Log.i(TAG, "insert : " + l);
+            onBackPressed();
+        }
+
+
     }
 
 
@@ -109,7 +138,7 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         addHost();
-        onBackPressed();
+
     }
 
 }

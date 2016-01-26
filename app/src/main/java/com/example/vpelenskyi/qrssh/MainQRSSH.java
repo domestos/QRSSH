@@ -45,7 +45,7 @@ public class MainQRSSH extends AppCompatActivity {
         setContentView(R.layout.activity_main_qrssh);
 
         //OPEN DATA BASE
-        Data db = new Data(this);
+        db = new Data(this);
         db.open();
         cursor = db.getAllData();
         startManagingCursor(cursor);
@@ -90,14 +90,20 @@ public class MainQRSSH extends AppCompatActivity {
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
+        if (item.getItemId() == CM_DELETE_HOST) {
+            AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+            db.deleteItem(acmi.id);
+            cursor.requery();
+            return true;
+        }
         return super.onContextItemSelected(item);
     }
 
     @Override
-        protected void onDestroy() {
-                super.onDestroy();
-               db.close();
-           }
+    protected void onDestroy() {
+        super.onDestroy();
+        db.close();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
