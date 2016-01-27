@@ -19,6 +19,7 @@ public class Data {
     private ContentValues cv = new ContentValues();
 
     private String TAG = "log_qrssh";
+
     public Data(Context context) {
         this.context = context;
     }
@@ -65,6 +66,7 @@ public class Data {
         db.beginTransaction();
         // change status activity
         Cursor cursor = db.rawQuery("SELECT " + COLUMN_ID + " FROM " + DB_TABLE, null);
+
         if (cursor.getCount() != 0) {
             offAllHost();
         }
@@ -89,12 +91,18 @@ public class Data {
         cv.clear();
     }
 
-
+    public Cursor getActiveCursor() {
+        Cursor cursor = db.query(DB_TABLE, null, COLUMN_ACTIVE + "=?", new String[]{String.valueOf(ACTIVE)}, null, null, null);
+        if (cursor.getCount() == 1) {
+            return cursor;
+        }
+        return null;
+    }
 
     public void setActivity(long id) {
         offAllHost();
-        cv.put(COLUMN_ACTIVE,ACTIVE);
-        db.update(DB_TABLE, cv, COLUMN_ID+ "= ?", new String[]{String.valueOf(id)});
+        cv.put(COLUMN_ACTIVE, ACTIVE);
+        db.update(DB_TABLE, cv, COLUMN_ID + "= ?", new String[]{String.valueOf(id)});
         cv.clear();
     }
 

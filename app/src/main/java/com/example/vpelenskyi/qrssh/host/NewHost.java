@@ -13,6 +13,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 
+import com.example.vpelenskyi.qrssh.MainQRSSH;
 import com.example.vpelenskyi.qrssh.R;
 import com.example.vpelenskyi.qrssh.database.Data;
 
@@ -22,8 +23,6 @@ import com.example.vpelenskyi.qrssh.database.Data;
 public class NewHost extends AppCompatActivity implements View.OnClickListener {
 
     private String TAG = "QRSSH_LOG";
-
-
 
     private EditText alias, host, port, username, password;
     private Button btnSaveHost;
@@ -103,9 +102,10 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
                     host.getText().toString(),
                     Integer.valueOf(port.getText().toString()),
                     username.getText().toString(),
-                    password.getText().toString(),db.ACTIVE);
+                    password.getText().toString(), db.ACTIVE);
             db.close();
             Log.i(TAG, "insert : " + l);
+
             onBackPressed();
         }
 

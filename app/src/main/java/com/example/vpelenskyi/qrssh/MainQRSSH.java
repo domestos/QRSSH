@@ -36,14 +36,16 @@ public class MainQRSSH extends AppCompatActivity {
     ListView listView;
     Data db;
     Cursor cursor;
-    TextView tvCount;
+    TextView tvStatus, tvAlis, tvHost;
     long os;
+    public static Host host;
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    //   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_qrssh);
+
 
         //OPEN DATA BASE
         db = new Data(this);
@@ -62,8 +64,10 @@ public class MainQRSSH extends AppCompatActivity {
         registerForContextMenu(listView);
 
         //COUNT VIEW TEXT
-        tvCount = (TextView) findViewById(R.id.tvConuts);
-        tvCount.setText("counts host: " + cursor.getCount());
+        tvHost = (TextView) findViewById(R.id.tvHost);
+        tvAlis = (TextView) findViewById(R.id.tvAlias);
+        tvStatus = (TextView) findViewById(R.id.tvStatus);
+//        tvCount.setText("counts host: " + cursor.getCount());
 
         //TOOLBAR
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -79,6 +83,8 @@ public class MainQRSSH extends AppCompatActivity {
             }
         });
 
+        setStatusHost();
+
     }
 
     @Override
@@ -93,15 +99,17 @@ public class MainQRSSH extends AppCompatActivity {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo acmi;
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case CM_DELETE_HOST:
                 acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
                 db.deleteItem(acmi.id);
+                setStatusHost();
                 cursor.requery();
                 return true;
             case CM_ACTIVE_HOST:
                 acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
                 db.setActivity(acmi.id);
+                setStatusHost();
                 cursor.requery();
                 return true;
             case CM_EDIT_HOST:
@@ -110,6 +118,27 @@ public class MainQRSSH extends AppCompatActivity {
         }
 
         return super.onContextItemSelected(item);
+    }
+
+    private void setStatusHost() {
+        if (host == null) {
+            host = new Host();
+            Log.i("test", "init host = " + host.hashCode());
+        }
+
+        if (host.getActiveHost(db) != null) {
+            if (!host.getAlias().isEmpty()) {
+                tvAlis.setText(getResources().getText(R.string.st_alias_host) + " " + host.getAlias().toString());
+            }
+            if (!host.getHost().isEmpty()) {
+                tvHost.setText(getText(R.string.st_host) + " " + host.getHost());
+            }
+        } else {
+            tvAlis.setText(getResources().getText(R.string.st_alias_host) + " no info");
+            tvHost.setText(getText(R.string.st_host) + " no info" );
+
+        }
+
     }
 
     @Override
@@ -134,6 +163,12 @@ public class MainQRSSH extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
+    @Override
+    protected void onRestart() {
+        setStatusHost();
+        super.onRestart();
+    }
 
     public class MySimlpeCursorAdapte extends SimpleCursorAdapter {
 
@@ -186,4 +221,7 @@ public class MainQRSSH extends AppCompatActivity {
         }
 
     }
+
+
+
 }

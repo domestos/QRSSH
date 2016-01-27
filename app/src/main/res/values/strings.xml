@@ -6,4 +6,7 @@
     <string name="hintPort">Port</string>
     <string name="hintUsername">Username</string>
     <string name="hintPassword">Password</string>
+    <string name="st_status_host">status:</string>
+    <string name="st_alias_host">Alias:</string>
+    <string name="st_host">Host:</string>
 </resources>

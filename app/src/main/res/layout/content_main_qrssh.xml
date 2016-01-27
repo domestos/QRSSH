@@ -10,17 +10,48 @@
     tools:showIn="@layout/activity_main_qrssh">
 
     <TextView
-        android:layout_margin="5dp"
-        android:id="@+id/tvConuts"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="count host: "
-        android:textSize="30dp" />
+        android:text="Inform about host:"
+        android:textSize="20dp"/>
+
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/st_status_host"
+         />
+
+    <TextView
+        android:id="@+id/tvAlias"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/st_alias_host"
+    />
+    <TextView
+        android:id="@+id/tvHost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/st_host"
+        />
+
+
+    <EditText
+        android:id="@+id/etUrl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textUri" />
+
+    <Button
+        android:id="@+id/btnSendUrl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:text="send" />
 
     <ListView
         android:id="@+id/lvHost"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"></ListView>
 
-    </ListView>
 </LinearLayout>

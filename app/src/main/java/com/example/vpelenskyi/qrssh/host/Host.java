@@ -1,5 +1,13 @@
 package com.example.vpelenskyi.qrssh.host;
 
+import android.database.Cursor;
+import android.util.Log;
+
+import com.example.vpelenskyi.qrssh.database.Data;
+
+import java.lang.reflect.Array;
+import java.util.Arrays;
+
 /**
  * Created by v.pelenskyi on 23.12.2015.
  */
@@ -29,6 +37,21 @@ public class Host {
         this.os = os;
     }
 
+    public Host getActiveHost(Data db) {
+        if (db != null) {
+            Log.i("test", db.toString());
+            Cursor cursor = db.getActiveCursor();
+            if (cursor != null && cursor.moveToFirst()) {
+                alias = cursor.getString(cursor.getColumnIndex(Data.COLUMN_ALIAS));
+                host = (cursor.getString(cursor.getColumnIndex(Data.COLUMN_HOST)));
+                port = (cursor.getInt(cursor.getColumnIndex(Data.COLUMN_PORT)));
+                username = (cursor.getString(cursor.getColumnIndex(Data.COLUMN_USER)));
+                password = (cursor.getString(cursor.getColumnIndex(Data.COLUMN_PASS)));
+            return this;
+            }
+        }
+        return null;
+    }
 
     public String getAlias() {
         return alias;
