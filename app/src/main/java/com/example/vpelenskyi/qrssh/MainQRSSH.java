@@ -30,6 +30,7 @@ import com.example.vpelenskyi.qrssh.host.NewHost;
 public class MainQRSSH extends AppCompatActivity {
     final int CM_DELETE_HOST = 0;
     final int CM_EDIT_HOST = 1;
+    final int CM_ACTIVE_HOST = 2;
 
     SimpleCursorAdapter scAdapter;
     ListView listView;
@@ -83,6 +84,7 @@ public class MainQRSSH extends AppCompatActivity {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
+        menu.add(0, CM_ACTIVE_HOST, 0, "set Activity");
         menu.add(0, CM_DELETE_HOST, 0, "Delete host");
         menu.add(0, CM_EDIT_HOST, 0, "Edit host");
     }
@@ -90,12 +92,23 @@ public class MainQRSSH extends AppCompatActivity {
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        if (item.getItemId() == CM_DELETE_HOST) {
-            AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-            db.deleteItem(acmi.id);
-            cursor.requery();
-            return true;
+        AdapterView.AdapterContextMenuInfo acmi;
+        switch (item.getItemId()){
+            case CM_DELETE_HOST:
+                acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+                db.deleteItem(acmi.id);
+                cursor.requery();
+                return true;
+            case CM_ACTIVE_HOST:
+                acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+                db.setActivity(acmi.id);
+                cursor.requery();
+                return true;
+            case CM_EDIT_HOST:
+                //need write code
+                return true;
         }
+
         return super.onContextItemSelected(item);
     }
 
@@ -152,9 +165,9 @@ public class MainQRSSH extends AppCompatActivity {
                     case 1:
                         v.setTextColor(Color.GREEN);
                         text = "ON";
-
                         break;
                     case 0:
+                        v.setTextColor(Color.BLACK);
                         text = "OFF";
                         break;
                 }

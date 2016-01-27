@@ -16,9 +16,9 @@ public class Data {
     DBHelpelr dbHelpelr;
     SQLiteDatabase db;
     public final Context context;
+    private ContentValues cv = new ContentValues();
 
     private String TAG = "log_qrssh";
-
     public Data(Context context) {
         this.context = context;
     }
@@ -61,14 +61,12 @@ public class Data {
 
 
     public long insertHost(String alias, int os, String host, int port, String user, String pass, int active) {
-        ContentValues cv = new ContentValues();
+
         db.beginTransaction();
         // change status activity
-        Cursor cursor = db.rawQuery("SELECT "+COLUMN_ID+" FROM " + DB_TABLE, null);
+        Cursor cursor = db.rawQuery("SELECT " + COLUMN_ID + " FROM " + DB_TABLE, null);
         if (cursor.getCount() != 0) {
-            cv.put(COLUMN_ACTIVE, NO_ACTIVE);
-            db.update(DB_TABLE, cv, COLUMN_ACTIVE+"= ?", new String[]{String.valueOf(ACTIVE)});
-            cv.clear();
+            offAllHost();
         }
         cv.put(COLUMN_ALIAS, alias);
         cv.put(COLUMN_OS, os);
@@ -80,11 +78,24 @@ public class Data {
         long rowID = db.insert(DB_TABLE, null, cv);
         db.setTransactionSuccessful();
         db.endTransaction();
-        Log.d(TAG, "row inserted, ID = " + rowID);
-        Log.d(TAG, "cv = " + cv.toString());
         Toast.makeText(context, cv.toString(), Toast.LENGTH_SHORT).show();
-        // cv.clear();
+        cv.clear();
         return rowID;
+    }
+
+    private void offAllHost() {
+        cv.put(COLUMN_ACTIVE, NO_ACTIVE);
+        db.update(DB_TABLE, cv, COLUMN_ACTIVE + "= ?", new String[]{String.valueOf(ACTIVE)});
+        cv.clear();
+    }
+
+
+
+    public void setActivity(long id) {
+        offAllHost();
+        cv.put(COLUMN_ACTIVE,ACTIVE);
+        db.update(DB_TABLE, cv, COLUMN_ID+ "= ?", new String[]{String.valueOf(id)});
+        cv.clear();
     }
 
     class DBHelpelr extends SQLiteOpenHelper {
