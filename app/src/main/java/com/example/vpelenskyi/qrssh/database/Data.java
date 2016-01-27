@@ -23,9 +23,13 @@ public class Data {
         this.context = context;
     }
 
+    public static final int NO_ACTIVE = 0;
+    public static final int ACTIVE = 1;
+
     private final String DB_DATA = "db_host";
     private final int DB_VERSION = 1;
     private final String DB_TABLE = "host";
+
 
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_ALIAS = "alias";
@@ -56,15 +60,26 @@ public class Data {
     }
 
 
-    public long insertHost(String alias, int os, String host, int port, String user, String pass) {
+    public long insertHost(String alias, int os, String host, int port, String user, String pass, int active) {
         ContentValues cv = new ContentValues();
+        db.beginTransaction();
+        // change status activity
+        Cursor cursor = db.rawQuery("SELECT "+COLUMN_ID+" FROM " + DB_TABLE, null);
+        if (cursor.getCount() != 0) {
+            cv.put(COLUMN_ACTIVE, NO_ACTIVE);
+            db.update(DB_TABLE, cv, COLUMN_ACTIVE+"= ?", new String[]{String.valueOf(ACTIVE)});
+            cv.clear();
+        }
         cv.put(COLUMN_ALIAS, alias);
         cv.put(COLUMN_OS, os);
+        cv.put(COLUMN_ACTIVE, active);
         cv.put(COLUMN_HOST, host);
         cv.put(COLUMN_PORT, port);
         cv.put(COLUMN_USER, user);
         cv.put(COLUMN_PASS, pass);
         long rowID = db.insert(DB_TABLE, null, cv);
+        db.setTransactionSuccessful();
+        db.endTransaction();
         Log.d(TAG, "row inserted, ID = " + rowID);
         Log.d(TAG, "cv = " + cv.toString());
         Toast.makeText(context, cv.toString(), Toast.LENGTH_SHORT).show();
@@ -76,6 +91,7 @@ public class Data {
         private final String DB_CREATE = "CREATE TABLE " + DB_TABLE + " ( " +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COLUMN_OS + " INTEGER, " +
+                COLUMN_ACTIVE + " INTEGER, " +
                 COLUMN_ALIAS + " TEXT, " +
                 COLUMN_HOST + " TEXT, " +
                 COLUMN_PORT + " INTEGER, " +

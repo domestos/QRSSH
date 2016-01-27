@@ -23,6 +23,8 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
 
     private String TAG = "QRSSH_LOG";
 
+
+
     private EditText alias, host, port, username, password;
     private Button btnSaveHost;
     private RadioGroup rgOS;
@@ -94,13 +96,14 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
 
             db = new Data(this);
             db.open();
+
             long l = db.insertHost(
                     alias.getText().toString(),
                     chekedOS(),
                     host.getText().toString(),
                     Integer.valueOf(port.getText().toString()),
                     username.getText().toString(),
-                    password.getText().toString());
+                    password.getText().toString(),db.ACTIVE);
             db.close();
             Log.i(TAG, "insert : " + l);
             onBackPressed();

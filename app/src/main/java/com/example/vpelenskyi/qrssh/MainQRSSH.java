@@ -51,8 +51,8 @@ public class MainQRSSH extends AppCompatActivity {
         startManagingCursor(cursor);
 
         //GET SIMPLE CURSOR ADAPTER
-        String[] from = new String[]{db.COLUMN_ALIAS, db.COLUMN_OS, db.COLUMN_OS};
-        int[] to = new int[]{R.id.itemText, R.id.tvOS, R.id.itemImeg};
+        String[] from = new String[]{db.COLUMN_ALIAS, db.COLUMN_OS, db.COLUMN_ACTIVE, db.COLUMN_OS};
+        int[] to = new int[]{R.id.itemText, R.id.tvOS, R.id.tvStatus, R.id.itemImeg};
         SimpleCursorAdapter scAdapter = new MySimlpeCursorAdapte(this, R.layout.item, cursor, from, to);
 
         //LIST VIEW
@@ -147,15 +147,26 @@ public class MainQRSSH extends AppCompatActivity {
 
         @Override
         public void setViewText(TextView v, String text) {
+            if (v.getId() == R.id.tvStatus) {
+                switch (Integer.parseInt(text)) {
+                    case 1:
+                        v.setTextColor(Color.GREEN);
+                        text = "ON";
+
+                        break;
+                    case 0:
+                        text = "OFF";
+                        break;
+                }
+            }
             if (v.getId() == R.id.tvOS) {
                 switch (Integer.parseInt(text)) {
                     case Host.OS_UBUNTU:
-                        text = "ubuntu";
+                        text = "";
                         break;
                     case Host.OS_WINDOWS:
-                        text = "windows";
+                        text = "";
                         break;
-
                 }
             }
             super.setViewText(v, text);
