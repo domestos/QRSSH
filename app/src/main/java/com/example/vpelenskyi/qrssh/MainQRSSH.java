@@ -26,6 +26,12 @@ import android.widget.TextView;
 import com.example.vpelenskyi.qrssh.database.Data;
 import com.example.vpelenskyi.qrssh.host.Host;
 import com.example.vpelenskyi.qrssh.host.NewHost;
+import com.example.vpelenskyi.qrssh.sshclient.ClientSsh;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+
+import java.util.Properties;
 
 public class MainQRSSH extends AppCompatActivity {
     final int CM_DELETE_HOST = 0;
@@ -35,6 +41,7 @@ public class MainQRSSH extends AppCompatActivity {
     SimpleCursorAdapter scAdapter;
     ListView listView;
     Data db;
+    Session session;
     Cursor cursor;
     TextView tvStatus, tvAlis, tvHost;
     long os;
@@ -120,22 +127,27 @@ public class MainQRSSH extends AppCompatActivity {
         return super.onContextItemSelected(item);
     }
 
+
+
     private void setStatusHost() {
         if (host == null) {
             host = new Host();
             Log.i("test", "init host = " + host.hashCode());
+
         }
 
         if (host.getActiveHost(db) != null) {
-            if (!host.getAlias().isEmpty()) {
-                tvAlis.setText(getResources().getText(R.string.st_alias_host) + " " + host.getAlias().toString());
-            }
-            if (!host.getHost().isEmpty()) {
-                tvHost.setText(getText(R.string.st_host) + " " + host.getHost());
-            }
+//            Session session =
+//            ClientSsh.getInstance().init(host.getHost(), host.getUsername(), host.getPassword(), host.getPort());
+            ClientSsh clientSsh = new ClientSsh();
+            clientSsh.execute();
+
+            tvAlis.setText(getResources().getText(R.string.st_alias_host) + " " + host.getAlias().toString());
+            tvHost.setText(getText(R.string.st_host) + " " + host.getHost());
+
         } else {
             tvAlis.setText(getResources().getText(R.string.st_alias_host) + " no info");
-            tvHost.setText(getText(R.string.st_host) + " no info" );
+            tvHost.setText(getText(R.string.st_host) + " no info");
 
         }
 
@@ -221,7 +233,6 @@ public class MainQRSSH extends AppCompatActivity {
         }
 
     }
-
 
 
 }

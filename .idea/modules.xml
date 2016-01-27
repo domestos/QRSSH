@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/QRSSH.iml" filepath="$PROJECT_DIR$/QRSSH.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jsch-0.1.53/jsch-0.1.53.iml" filepath="$PROJECT_DIR$/jsch-0.1.53/jsch-0.1.53.iml" />
     </modules>
   </component>
 </project>
