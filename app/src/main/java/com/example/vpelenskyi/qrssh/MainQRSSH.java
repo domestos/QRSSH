@@ -1,13 +1,9 @@
 package com.example.vpelenskyi.qrssh;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.graphics.drawable.Icon;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -26,12 +22,7 @@ import android.widget.TextView;
 import com.example.vpelenskyi.qrssh.database.Data;
 import com.example.vpelenskyi.qrssh.host.Host;
 import com.example.vpelenskyi.qrssh.host.NewHost;
-import com.example.vpelenskyi.qrssh.sshclient.ClientSsh;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-
-import java.util.Properties;
 
 public class MainQRSSH extends AppCompatActivity {
     final int CM_DELETE_HOST = 0;
@@ -95,6 +86,19 @@ public class MainQRSSH extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        db.close();
+    }
+
+    @Override
+    protected void onRestart() {
+        setStatusHost();
+        super.onRestart();
+    }
+
+
+    @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         menu.add(0, CM_ACTIVE_HOST, 0, "set Activity");
@@ -128,7 +132,6 @@ public class MainQRSSH extends AppCompatActivity {
     }
 
 
-
     private void setStatusHost() {
         if (host == null) {
             host = new Host();
@@ -137,10 +140,6 @@ public class MainQRSSH extends AppCompatActivity {
         }
 
         if (host.getActiveHost(db) != null) {
-//            Session session =
-//            ClientSsh.getInstance().init(host.getHost(), host.getUsername(), host.getPassword(), host.getPort());
-            ClientSsh clientSsh = new ClientSsh();
-            clientSsh.execute();
 
             tvAlis.setText(getResources().getText(R.string.st_alias_host) + " " + host.getAlias().toString());
             tvHost.setText(getText(R.string.st_host) + " " + host.getHost());
@@ -151,12 +150,6 @@ public class MainQRSSH extends AppCompatActivity {
 
         }
 
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        db.close();
     }
 
     @Override
@@ -175,12 +168,6 @@ public class MainQRSSH extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
-    @Override
-    protected void onRestart() {
-        setStatusHost();
-        super.onRestart();
-    }
 
     public class MySimlpeCursorAdapte extends SimpleCursorAdapter {
 

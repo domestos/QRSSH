@@ -2,6 +2,7 @@ package com.example.vpelenskyi.qrssh.host;
 
 import android.database.Cursor;
 import android.util.Log;
+import android.widget.EditText;
 
 import com.example.vpelenskyi.qrssh.database.Data;
 
@@ -37,6 +38,15 @@ public class Host {
         this.os = os;
     }
 
+    public Host(String alias, String host, String username, String password, int port) {
+        this.alias = alias;
+        this.host = host;
+        this.port = port;
+        this.username = username;
+        this.password = password;
+    }
+
+
     public Host getActiveHost(Data db) {
         if (db != null) {
             Log.i("test", db.toString());
@@ -47,7 +57,7 @@ public class Host {
                 port = (cursor.getInt(cursor.getColumnIndex(Data.COLUMN_PORT)));
                 username = (cursor.getString(cursor.getColumnIndex(Data.COLUMN_USER)));
                 password = (cursor.getString(cursor.getColumnIndex(Data.COLUMN_PASS)));
-            return this;
+                return this;
             }
         }
         return null;

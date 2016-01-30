@@ -16,6 +16,7 @@ import android.widget.RadioGroup;
 import com.example.vpelenskyi.qrssh.MainQRSSH;
 import com.example.vpelenskyi.qrssh.R;
 import com.example.vpelenskyi.qrssh.database.Data;
+import com.example.vpelenskyi.qrssh.sshclient.TestConnect;
 
 /**
  * Created by v.pelenskyi on 22.12.2015.
@@ -25,7 +26,7 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
     private String TAG = "QRSSH_LOG";
 
     private EditText alias, host, port, username, password;
-    private Button btnSaveHost;
+    private Button btnSaveHost, btnCheckConnect;
     private RadioGroup rgOS;
     private RadioButton rbWindows, rbUbuntu;
     Data db;
@@ -49,6 +50,9 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
         //CLICK BUTTON
         btnSaveHost = (Button) findViewById(R.id.btnSaveHost);
         btnSaveHost.setOnClickListener(this);
+        btnCheckConnect = (Button) findViewById(R.id.btnCheckConnect);
+        btnCheckConnect.setOnClickListener(this);
+
         rgOS = (RadioGroup) findViewById(R.id.rgOS);
         rbWindows = (RadioButton) findViewById(R.id.rbWindows);
         rbUbuntu = (RadioButton) findViewById(R.id.rbUbntu);
@@ -140,7 +144,26 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        addHost();
+        switch (v.getId()) {
+            case R.id.btnSaveHost:
+                addHost();
+                break;
+            case R.id.btnCheckConnect:
+                checkConnect();
+                break;
+        }
+
+    }
+
+    private void checkConnect() {
+        if(validation()){
+            TestConnect testConnect = new TestConnect(NewHost.this);
+            testConnect.execute(new Host(alias.getText().toString(),
+                    host.getText().toString(),
+                    username.getText().toString(),
+                    password.getText().toString(),
+                    Integer.valueOf(port.getText().toString())));
+        }
 
     }
 
