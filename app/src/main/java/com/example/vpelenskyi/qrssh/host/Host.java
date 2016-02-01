@@ -57,6 +57,7 @@ public class Host {
                 port = (cursor.getInt(cursor.getColumnIndex(Data.COLUMN_PORT)));
                 username = (cursor.getString(cursor.getColumnIndex(Data.COLUMN_USER)));
                 password = (cursor.getString(cursor.getColumnIndex(Data.COLUMN_PASS)));
+                os =  (cursor.getString(cursor.getColumnIndex(Data.COLUMN_OS)));
                 return this;
             }
         }

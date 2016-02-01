@@ -22,7 +22,12 @@ import android.widget.TextView;
 import com.example.vpelenskyi.qrssh.database.Data;
 import com.example.vpelenskyi.qrssh.host.Host;
 import com.example.vpelenskyi.qrssh.host.NewHost;
+import com.example.vpelenskyi.qrssh.sshclient.TestConnect;
 import com.jcraft.jsch.Session;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class MainQRSSH extends AppCompatActivity {
     final int CM_DELETE_HOST = 0;
@@ -86,6 +91,12 @@ public class MainQRSSH extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        setStatusHost();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         db.close();
@@ -94,6 +105,7 @@ public class MainQRSSH extends AppCompatActivity {
     @Override
     protected void onRestart() {
         setStatusHost();
+        Log.i("test", " "+host.hashCode()+ host.toString());
         super.onRestart();
     }
 
@@ -133,6 +145,7 @@ public class MainQRSSH extends AppCompatActivity {
 
 
     private void setStatusHost() {
+        boolean isConnect =false;
         if (host == null) {
             host = new Host();
             Log.i("test", "init host = " + host.hashCode());
@@ -140,11 +153,31 @@ public class MainQRSSH extends AppCompatActivity {
         }
 
         if (host.getActiveHost(db) != null) {
+            TestConnect testConnect = new TestConnect(this);
+            testConnect.execute(host);
+
+            try {
+                isConnect = testConnect.get(5 , TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+            }
+            if(isConnect){
+                tvStatus.setText(getResources().getText(R.string.st_status_host )+ " connect");
+                tvStatus.setTextColor(Color.GREEN);
+            }else {
+                tvStatus.setText(getResources().getText(R.string.st_status_host )+ " no connect");
+                tvStatus.setTextColor(Color.MAGENTA);
+            }
 
             tvAlis.setText(getResources().getText(R.string.st_alias_host) + " " + host.getAlias().toString());
             tvHost.setText(getText(R.string.st_host) + " " + host.getHost());
 
         } else {
+            tvStatus.setText(R.string.st_status_host + " no info");
             tvAlis.setText(getResources().getText(R.string.st_alias_host) + " no info");
             tvHost.setText(getText(R.string.st_host) + " no info");
 
@@ -197,11 +230,11 @@ public class MainQRSSH extends AppCompatActivity {
             if (v.getId() == R.id.tvStatus) {
                 switch (Integer.parseInt(text)) {
                     case 1:
-                        v.setTextColor(Color.GREEN);
+                   //     v.setTextColor(Color.GREEN);
                         text = "ON";
                         break;
                     case 0:
-                        v.setTextColor(Color.BLACK);
+                //        v.setTextColor(Color.BLACK);
                         text = "OFF";
                         break;
                 }

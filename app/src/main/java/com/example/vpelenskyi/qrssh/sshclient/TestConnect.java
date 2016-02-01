@@ -19,17 +19,17 @@ import java.util.Properties;
 /**
  * Created by varenik on 30.01.16.
  */
-public class TestConnect extends AsyncTask<Host, Void, Session> {
+public class TestConnect extends AsyncTask<Host, Void, Boolean> {
 
     private String TAG = "log_ssh";
     Session session;
     JSch jSch;
-   private Context contHost;
+    private Context contHost;
 
     boolean running;
     ProgressDialog progressDialog;
 
-    public TestConnect(NewHost contHost) {
+    public TestConnect(Context contHost) {
 
         this.contHost = contHost;
     }
@@ -48,12 +48,12 @@ public class TestConnect extends AsyncTask<Host, Void, Session> {
             }
         });
         progressDialog.show();
-        
+
 
     }
 
     @Override
-    protected Session doInBackground(Host... params) {
+    protected Boolean doInBackground(Host... params) {
         if (params.length == 1) {
 
             for (Host host : params) {
@@ -78,7 +78,7 @@ public class TestConnect extends AsyncTask<Host, Void, Session> {
 
                 session.setConfig(config);
                 try {
-                    session.connect();
+                    session.connect(5000);
                 } catch (JSchException e) {
                     e.printStackTrace();
                     Log.e(TAG, "session.connect give the error " + e);
@@ -87,19 +87,19 @@ public class TestConnect extends AsyncTask<Host, Void, Session> {
 
 
         }
-        return session;
+        return session.isConnected();
     }
 
     @Override
-    protected void onPostExecute(Session session) {
-        if (session.isConnected()) {
-                    Toast.makeText(contHost, "Connect", Toast.LENGTH_LONG).show();
+    protected void onPostExecute(Boolean isConnect) {
+        if (isConnect) {
+            Toast.makeText(contHost, "Connect", Toast.LENGTH_LONG).show();
         } else {
             Toast.makeText(contHost, "NO Connect", Toast.LENGTH_LONG).show();
 
         }
         progressDialog.dismiss();
-        super.onPostExecute(session);
+        super.onPostExecute(isConnect);
     }
 
 
