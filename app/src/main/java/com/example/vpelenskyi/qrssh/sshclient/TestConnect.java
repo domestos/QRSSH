@@ -19,7 +19,7 @@ import java.util.Properties;
 /**
  * Created by varenik on 30.01.16.
  */
-public class TestConnect extends AsyncTask<Host, Void, Session> {
+public class TestConnect extends AsyncTask<Host, Void, Boolean> {
 
     private String TAG = "log_ssh";
     Session session;
@@ -51,7 +51,7 @@ public class TestConnect extends AsyncTask<Host, Void, Session> {
     }
 
     @Override
-    protected Session doInBackground(Host... params) {
+    protected Boolean doInBackground(Host... params) {
         if (params.length == 1) {
 
             for (Host host : params) {
@@ -79,7 +79,7 @@ public class TestConnect extends AsyncTask<Host, Void, Session> {
 
                 session.setConfig(config);
                 try {
-                    session.connect();
+                    session.connect(5000);
                 } catch (JSchException e) {
                     e.printStackTrace();
                     Log.e(TAG, "session.connect give the error " + e);
@@ -88,10 +88,10 @@ public class TestConnect extends AsyncTask<Host, Void, Session> {
 
 
         }
-        return session;
+        return session.isConnected();
     }
 
-    @Override
+    
     protected void onPostExecute(Session session) {
         if (session.isConnected()) {
             Toast.makeText(contHost, "Connect", Toast.LENGTH_LONG).show();
@@ -100,7 +100,7 @@ public class TestConnect extends AsyncTask<Host, Void, Session> {
 
         }
         progressDialog.dismiss();
-        super.onPostExecute(session);
+        super.onPostExecute(session.isConnected());
     }
 
 
