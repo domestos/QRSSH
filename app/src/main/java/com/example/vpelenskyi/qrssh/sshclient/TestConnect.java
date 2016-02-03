@@ -9,7 +9,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.vpelenskyi.qrssh.host.Host;
-import com.example.vpelenskyi.qrssh.host.NewHost;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;

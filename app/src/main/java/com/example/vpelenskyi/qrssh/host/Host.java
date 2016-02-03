@@ -7,6 +7,7 @@ import android.widget.EditText;
 import com.example.vpelenskyi.qrssh.database.Data;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -24,12 +25,26 @@ public class Host {
     private String username;
     private String password;
     private int port;
-    private String os;
+    private int id;
+    private int os;
+    private boolean hostConnect;
 
     public Host() {
+
     }
 
-    public Host(String alias, String host, int port, String username, String password, String os) {
+
+    public Host(String alias, String host, int port, String username, String password, int os, boolean hostConnect) {
+        this.alias = alias;
+        this.host = host;
+        this.username = username;
+        this.password = password;
+        this.port = port;
+        this.os = os;
+        this.hostConnect = hostConnect;
+    }
+
+    public Host(String alias, String host, int port, String username, String password, int os) {
         this.alias = alias;
         this.host = host;
         this.username = username;
@@ -46,22 +61,36 @@ public class Host {
         this.password = password;
     }
 
+    public ArrayList<Host> getAllHost(Data db) {
+        ArrayList<Host> hosts = null;
+
+        return hosts;
+    }
 
     public Host getActiveHost(Data db) {
         if (db != null) {
             Log.i("test", db.toString());
             Cursor cursor = db.getActiveCursor();
             if (cursor != null && cursor.moveToFirst()) {
+                id = cursor.getInt(cursor.getColumnIndex(Data.COLUMN_ID));
                 alias = cursor.getString(cursor.getColumnIndex(Data.COLUMN_ALIAS));
                 host = (cursor.getString(cursor.getColumnIndex(Data.COLUMN_HOST)));
                 port = (cursor.getInt(cursor.getColumnIndex(Data.COLUMN_PORT)));
                 username = (cursor.getString(cursor.getColumnIndex(Data.COLUMN_USER)));
                 password = (cursor.getString(cursor.getColumnIndex(Data.COLUMN_PASS)));
-                os =  (cursor.getString(cursor.getColumnIndex(Data.COLUMN_OS)));
+                os = (cursor.getInt(cursor.getColumnIndex(Data.COLUMN_OS)));
                 return this;
             }
         }
         return null;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getAlias() {
@@ -104,11 +133,11 @@ public class Host {
         this.port = port;
     }
 
-    public String getOs() {
+    public int getOs() {
         return os;
     }
 
-    public void setOs(String os) {
+    public void setOs(int os) {
         this.os = os;
     }
 
