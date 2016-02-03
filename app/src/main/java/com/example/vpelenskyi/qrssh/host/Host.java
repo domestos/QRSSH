@@ -24,6 +24,7 @@ public class Host {
     private String username;
     private String password;
     private int port;
+    private int id;
     private int os;
     private boolean hostConnect;
 
@@ -48,7 +49,7 @@ public class Host {
         this.password = password;
     }
 
-    public Host(String alias, String host, int port, String username, String password, int os, boolean hostConnect) {
+    public Host(String alias, String host, int port, String username, String password, int os, boolean hostConnect, int id) {
         this.alias = alias;
         this.host = host;
         this.username = username;
@@ -56,6 +57,7 @@ public class Host {
         this.port = port;
         this.os = os;
         this.hostConnect = hostConnect;
+        this.id = id;
 
     }
 
@@ -120,6 +122,14 @@ public class Host {
         return os;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public void setOs(int os) {
         this.os = os;
     }
@@ -140,6 +150,7 @@ public class Host {
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", port=" + port +
+                ", id=" + id +
                 ", os=" + os +
                 ", hostConnect=" + hostConnect +
                 '}';

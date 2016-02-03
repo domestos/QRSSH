@@ -39,15 +39,12 @@ public class MainQRSSH extends AppCompatActivity {
     final int CM_EDIT_HOST = 1;
 
     private String TAG = "ssh_log";
-    private ArrayList<Host> hosts;
+    public ArrayList<Host> hosts;
     private HostAdapter hostAdapter;
     private ListView listView;
     private Data db;
     private Cursor cursor;
-    private TextView tvStatus;
-    private TextView tvAlis;
-    private TextView tvHost;
-    public static Host host;
+    public Host host;
 
     //   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -58,18 +55,12 @@ public class MainQRSSH extends AppCompatActivity {
         //OPEN DATA BASE
         db = new Data(this);
         db.open();
-        cursor = db.getAllData();
         hosts = getHosts();
 
         //LIST VIEW
         listView = (ListView) findViewById(R.id.lvHost);
         registerForContextMenu(listView);
 
-        //COUNT VIEW TEXT
-        tvHost = (TextView) findViewById(R.id.tvHost);
-        tvAlis = (TextView) findViewById(R.id.tvAlias);
-        tvStatus = (TextView) findViewById(R.id.tvStatus);
-//        tvCount.setText("counts host: " + cursor.getCount());
 
         //TOOLBAR
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -85,9 +76,9 @@ public class MainQRSSH extends AppCompatActivity {
             }
         });
 
+        listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
         new QRSSHAsynkTask().execute(hosts);
     }
-
 
 
     @Override
@@ -96,13 +87,16 @@ public class MainQRSSH extends AppCompatActivity {
         db.close();
     }
 
+
     @Override
     protected void onRestart() {
-        //  setStatusHost();
-        hostAdapter.notifyDataSetChanged();
         super.onRestart();
+        hosts = getHosts();
+        Log.i(TAG, "onRestart = size cursor " + cursor.getCount());
+        Log.i(TAG, "onRestart = size ArrayLisy " + hosts.size());
+        listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
+        new QRSSHAsynkTask().execute(hosts);
     }
-
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -111,15 +105,25 @@ public class MainQRSSH extends AppCompatActivity {
         menu.add(0, CM_EDIT_HOST, 0, "Edit host");
     }
 
-
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo acmi;
         switch (item.getItemId()) {
             case CM_DELETE_HOST:
+
                 acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-                db.deleteItem(acmi.id);
-                hostAdapter.notifyDataSetChanged();
+                int p = acmi.position;
+                Log.i(TAG, "positin  " + acmi.position + " id " + acmi.id + " alias " +
+                        hosts.get(p).getAlias());
+                int del = db.deleteItem(hosts.get(p).getId());
+                Log.i(TAG, "del " + del);
+                hosts.remove(p);
+
+                listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
+                hosts = getHosts();
+                new QRSSHAsynkTask().execute(hosts);
+
+
                 return true;
             case CM_EDIT_HOST:
                 //need write code
@@ -128,7 +132,6 @@ public class MainQRSSH extends AppCompatActivity {
 
         return super.onContextItemSelected(item);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -146,9 +149,8 @@ public class MainQRSSH extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
-
-    private ArrayList<Host> getHosts() {
+    public ArrayList<Host> getHosts() {
+        cursor = db.getAllData();
         hosts = new ArrayList<>();
         Log.i(TAG, "count cursor = " + cursor.getCount());
         if (cursor.moveToFirst()) {
@@ -159,8 +161,9 @@ public class MainQRSSH extends AppCompatActivity {
                 String pass = cursor.getString(cursor.getColumnIndex(Data.COLUMN_PASS));
                 int port = cursor.getInt(cursor.getColumnIndex(Data.COLUMN_PORT));
                 int os = cursor.getInt(cursor.getColumnIndex(Data.COLUMN_OS));
+                int id = cursor.getInt(cursor.getColumnIndex(Data.COLUMN_ID));
                 boolean hostConnect = false;
-                hosts.add(new Host(alias, hostName, port, user, pass, os, hostConnect));
+                hosts.add(new Host(alias, hostName, port, user, pass, os, hostConnect, id));
             } while (cursor.moveToNext());
         }
         Log.i(TAG, "count cursor = " + hosts.size());
@@ -183,7 +186,7 @@ public class MainQRSSH extends AppCompatActivity {
                 public void onClick(DialogInterface dialog, int which) {
                 }
             });
-            progressDialog.show();
+            //     progressDialog.show();
         }
 
         @Override
@@ -204,8 +207,8 @@ public class MainQRSSH extends AppCompatActivity {
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
-            hostAdapter = new HostAdapter(MainQRSSH.this, hosts);
-            listView.setAdapter(hostAdapter);
+            listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
+
             progressDialog.dismiss();
         }
     }

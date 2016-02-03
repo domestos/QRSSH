@@ -107,6 +107,9 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
                     Integer.valueOf(port.getText().toString()),
                     username.getText().toString(),
                     password.getText().toString(), db.ACTIVE);
+
+
+
             db.close();
             Log.i(TAG, "insert : " + l);
 

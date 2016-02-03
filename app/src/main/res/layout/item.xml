@@ -2,9 +2,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="10dp"
-    android:layout_marginBottom="10dp"
-    android:orientation="horizontal">
+    android:layout_marginBottom="20dp"
+    android:layout_marginTop="30dp"
+    android:background="#b4231f1f"
+    android:orientation="horizontal"
+    android:paddingBottom="10dp"
+    android:paddingTop="10dp">
 
     <ImageView
         android:id="@+id/itemImeg"
@@ -14,22 +17,25 @@
         android:src="@drawable/windows" />
 
     <TextView
-        android:text="os"
         android:id="@+id/tvOS"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="os" />
+
     <TextView
-        android:text="  status"
         android:id="@+id/tvStatus"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="  status" />
+
     <TextView
-        android:textSize="20dp"
         android:id="@+id/itemText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|center_vertical"
         android:gravity="center"
-        android:text="alias host" />
+        android:text="alias host"
+        android:textColor="#ffffff"
+        android:textSize="25dp" />
 
 </LinearLayout>

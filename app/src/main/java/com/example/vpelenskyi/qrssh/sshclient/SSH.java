@@ -13,7 +13,7 @@ import java.util.Properties;
  * Created by v.pelenskyi on 03.02.2016.
  */
 public class SSH {
-    private int timeOut = 500;
+    private int timeOut = 900;
     private String TAG = "ssh_log";
     private Session session;
     private JSch jSch;

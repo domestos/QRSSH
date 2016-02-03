@@ -56,8 +56,9 @@ public class Data {
         return db.query(DB_TABLE, null, null, null, null, null, null);
     }
 
-    public void deleteItem(long id) {
-        db.delete(DB_TABLE, COLUMN_ID + " =" + id, null);
+    public int deleteItem(long id) {
+        return db.delete(DB_TABLE, COLUMN_ID + " =" + id, null);
+
     }
 
 
