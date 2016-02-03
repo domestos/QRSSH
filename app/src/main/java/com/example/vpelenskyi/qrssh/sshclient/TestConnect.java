@@ -24,11 +24,9 @@ public class TestConnect extends AsyncTask<Host, Void, Session> {
     private String TAG = "log_ssh";
     Session session;
     JSch jSch;
-   private Context contHost;
-
+    private Context contHost;
     boolean running;
     ProgressDialog progressDialog;
-
     public TestConnect(NewHost contHost) {
 
         this.contHost = contHost;
@@ -48,7 +46,7 @@ public class TestConnect extends AsyncTask<Host, Void, Session> {
             }
         });
         progressDialog.show();
-        
+
 
     }
 
@@ -76,6 +74,9 @@ public class TestConnect extends AsyncTask<Host, Void, Session> {
                 config.put("compression.s2c", "zlib,none");
                 config.put("compression.c2s", "zlib,none");
 
+                session.setConfig("PreferredAuthentications",
+                        "password"); //add this line to your code
+
                 session.setConfig(config);
                 try {
                     session.connect();
@@ -93,7 +94,7 @@ public class TestConnect extends AsyncTask<Host, Void, Session> {
     @Override
     protected void onPostExecute(Session session) {
         if (session.isConnected()) {
-                    Toast.makeText(contHost, "Connect", Toast.LENGTH_LONG).show();
+            Toast.makeText(contHost, "Connect", Toast.LENGTH_LONG).show();
         } else {
             Toast.makeText(contHost, "NO Connect", Toast.LENGTH_LONG).show();
 

@@ -24,12 +24,14 @@ public class Host {
     private String username;
     private String password;
     private int port;
-    private String os;
+    private int os;
+    private boolean hostConnect;
+
 
     public Host() {
     }
 
-    public Host(String alias, String host, int port, String username, String password, String os) {
+    public Host(String alias, String host, int port, String username, String password, int os) {
         this.alias = alias;
         this.host = host;
         this.username = username;
@@ -44,6 +46,17 @@ public class Host {
         this.port = port;
         this.username = username;
         this.password = password;
+    }
+
+    public Host(String alias, String host, int port, String username, String password, int os, boolean hostConnect) {
+        this.alias = alias;
+        this.host = host;
+        this.username = username;
+        this.password = password;
+        this.port = port;
+        this.os = os;
+        this.hostConnect = hostConnect;
+
     }
 
 
@@ -103,14 +116,21 @@ public class Host {
         this.port = port;
     }
 
-    public String getOs() {
+    public int getOs() {
         return os;
     }
 
-    public void setOs(String os) {
+    public void setOs(int os) {
         this.os = os;
     }
 
+    public boolean getHostConnect() {
+        return hostConnect;
+    }
+
+    public void setHostConnect(boolean hostConnect) {
+        this.hostConnect = hostConnect;
+    }
 
     @Override
     public String toString() {
@@ -120,7 +140,8 @@ public class Host {
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", port=" + port +
-                ", os='" + os + '\'' +
+                ", os=" + os +
+                ", hostConnect=" + hostConnect +
                 '}';
     }
 }

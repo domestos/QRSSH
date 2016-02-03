@@ -1,9 +1,13 @@
 package com.example.vpelenskyi.qrssh;
 
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -22,20 +26,27 @@ import android.widget.TextView;
 import com.example.vpelenskyi.qrssh.database.Data;
 import com.example.vpelenskyi.qrssh.host.Host;
 import com.example.vpelenskyi.qrssh.host.NewHost;
+import com.example.vpelenskyi.qrssh.sshclient.SSH;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+
+import java.util.ArrayList;
+import java.util.Properties;
 
 public class MainQRSSH extends AppCompatActivity {
     final int CM_DELETE_HOST = 0;
     final int CM_EDIT_HOST = 1;
-    final int CM_ACTIVE_HOST = 2;
 
-    SimpleCursorAdapter scAdapter;
-    ListView listView;
-    Data db;
-    Session session;
-    Cursor cursor;
-    TextView tvStatus, tvAlis, tvHost;
-    long os;
+    private String TAG = "ssh_log";
+    private ArrayList<Host> hosts;
+    private HostAdapter hostAdapter;
+    private ListView listView;
+    private Data db;
+    private Cursor cursor;
+    private TextView tvStatus;
+    private TextView tvAlis;
+    private TextView tvHost;
     public static Host host;
 
     //   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -44,21 +55,14 @@ public class MainQRSSH extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_qrssh);
 
-
         //OPEN DATA BASE
         db = new Data(this);
         db.open();
         cursor = db.getAllData();
-        startManagingCursor(cursor);
-
-        //GET SIMPLE CURSOR ADAPTER
-        String[] from = new String[]{db.COLUMN_ALIAS, db.COLUMN_OS, db.COLUMN_ACTIVE, db.COLUMN_OS};
-        int[] to = new int[]{R.id.itemText, R.id.tvOS, R.id.tvStatus, R.id.itemImeg};
-        SimpleCursorAdapter scAdapter = new MySimlpeCursorAdapte(this, R.layout.item, cursor, from, to);
+        hosts = getHosts();
 
         //LIST VIEW
         listView = (ListView) findViewById(R.id.lvHost);
-        listView.setAdapter(scAdapter);
         registerForContextMenu(listView);
 
         //COUNT VIEW TEXT
@@ -81,9 +85,10 @@ public class MainQRSSH extends AppCompatActivity {
             }
         });
 
-        setStatusHost();
-
+        new QRSSHAsynkTask().execute(hosts);
     }
+
+
 
     @Override
     protected void onDestroy() {
@@ -93,7 +98,8 @@ public class MainQRSSH extends AppCompatActivity {
 
     @Override
     protected void onRestart() {
-        setStatusHost();
+        //  setStatusHost();
+        hostAdapter.notifyDataSetChanged();
         super.onRestart();
     }
 
@@ -101,7 +107,6 @@ public class MainQRSSH extends AppCompatActivity {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        menu.add(0, CM_ACTIVE_HOST, 0, "set Activity");
         menu.add(0, CM_DELETE_HOST, 0, "Delete host");
         menu.add(0, CM_EDIT_HOST, 0, "Edit host");
     }
@@ -114,14 +119,7 @@ public class MainQRSSH extends AppCompatActivity {
             case CM_DELETE_HOST:
                 acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
                 db.deleteItem(acmi.id);
-                setStatusHost();
-                cursor.requery();
-                return true;
-            case CM_ACTIVE_HOST:
-                acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-                db.setActivity(acmi.id);
-                setStatusHost();
-                cursor.requery();
+                hostAdapter.notifyDataSetChanged();
                 return true;
             case CM_EDIT_HOST:
                 //need write code
@@ -131,26 +129,6 @@ public class MainQRSSH extends AppCompatActivity {
         return super.onContextItemSelected(item);
     }
 
-
-    private void setStatusHost() {
-        if (host == null) {
-            host = new Host();
-            Log.i("test", "init host = " + host.hashCode());
-
-        }
-
-        if (host.getActiveHost(db) != null) {
-
-            tvAlis.setText(getResources().getText(R.string.st_alias_host) + " " + host.getAlias().toString());
-            tvHost.setText(getText(R.string.st_host) + " " + host.getHost());
-
-        } else {
-            tvAlis.setText(getResources().getText(R.string.st_alias_host) + " no info");
-            tvHost.setText(getText(R.string.st_host) + " no info");
-
-        }
-
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -169,57 +147,66 @@ public class MainQRSSH extends AppCompatActivity {
     }
 
 
-    public class MySimlpeCursorAdapte extends SimpleCursorAdapter {
 
-        public MySimlpeCursorAdapte(Context context, int layout, Cursor c, String[] from, int[] to) {
-            super(context, layout, c, from, to);
+    private ArrayList<Host> getHosts() {
+        hosts = new ArrayList<>();
+        Log.i(TAG, "count cursor = " + cursor.getCount());
+        if (cursor.moveToFirst()) {
+            do {
+                String alias = cursor.getString(cursor.getColumnIndex(Data.COLUMN_ALIAS));
+                String hostName = cursor.getString(cursor.getColumnIndex(Data.COLUMN_HOST));
+                String user = cursor.getString(cursor.getColumnIndex(Data.COLUMN_USER));
+                String pass = cursor.getString(cursor.getColumnIndex(Data.COLUMN_PASS));
+                int port = cursor.getInt(cursor.getColumnIndex(Data.COLUMN_PORT));
+                int os = cursor.getInt(cursor.getColumnIndex(Data.COLUMN_OS));
+                boolean hostConnect = false;
+                hosts.add(new Host(alias, hostName, port, user, pass, os, hostConnect));
+            } while (cursor.moveToNext());
         }
-
-        @Override
-        public void setViewImage(ImageView v, String value) {
-
-            switch (Integer.parseInt(value)) {
-                case Host.OS_UBUNTU:
-                    value = String.valueOf(R.drawable.ubuntu);
-                    break;
-                case Host.OS_WINDOWS:
-                    value = String.valueOf(R.drawable.windows);
-                    break;
-                default:
-                    value = String.valueOf(R.drawable.windows);
-                    break;
-            }
-            super.setViewImage(v, value);
-        }
-
-        @Override
-        public void setViewText(TextView v, String text) {
-            if (v.getId() == R.id.tvStatus) {
-                switch (Integer.parseInt(text)) {
-                    case 1:
-                        v.setTextColor(Color.GREEN);
-                        text = "ON";
-                        break;
-                    case 0:
-                        v.setTextColor(Color.BLACK);
-                        text = "OFF";
-                        break;
-                }
-            }
-            if (v.getId() == R.id.tvOS) {
-                switch (Integer.parseInt(text)) {
-                    case Host.OS_UBUNTU:
-                        text = "";
-                        break;
-                    case Host.OS_WINDOWS:
-                        text = "";
-                        break;
-                }
-            }
-            super.setViewText(v, text);
-        }
-
+        Log.i(TAG, "count cursor = " + hosts.size());
+        return hosts;
     }
 
+    public class QRSSHAsynkTask extends AsyncTask<ArrayList<Host>, Void, Boolean> {
 
+        private ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            progressDialog = new ProgressDialog(MainQRSSH.this);
+            progressDialog.setTitle("Check connect to ssh Host");
+            progressDialog.setMessage("pleas wait");
+
+            progressDialog.setButton(Dialog.BUTTON_POSITIVE, "Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                }
+            });
+            progressDialog.show();
+        }
+
+        @Override
+        protected Boolean doInBackground(ArrayList... params) {
+            SSH ssh = new SSH();
+            for (ArrayList<Host> arrayList : params) {
+                for (int i = 0; arrayList.size() > i; i++) {
+                    arrayList.get(i).setHostConnect(ssh.openSession(arrayList.get(i)));
+                    Log.i(TAG, arrayList.get(i).toString());
+                    ssh.close();
+                }
+
+
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            super.onPostExecute(aBoolean);
+            hostAdapter = new HostAdapter(MainQRSSH.this, hosts);
+            listView.setAdapter(hostAdapter);
+            progressDialog.dismiss();
+        }
+    }
 }
