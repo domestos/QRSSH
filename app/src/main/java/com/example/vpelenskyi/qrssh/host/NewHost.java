@@ -1,5 +1,6 @@
 package com.example.vpelenskyi.qrssh.host;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.ActionBar;
@@ -25,7 +26,7 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
 
     private String TAG = "QRSSH_LOG";
 
-    private EditText alias, host, port, username, password;
+    private EditText etAlias, etHost, etPort, etUsername, etPassword;
     private Button btnSaveHost, btnCheckConnect;
     private RadioGroup rgOS;
     private RadioButton rbWindows, rbUbuntu;
@@ -58,6 +59,7 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
         rbUbuntu = (RadioButton) findViewById(R.id.rbUbntu);
     }
 
+
     public int chekedOS() {
         switch (rgOS.getCheckedRadioButtonId()) {
             case R.id.rbWindows:
@@ -70,24 +72,24 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
     }
 
     private boolean validation() {
-        if (TextUtils.isEmpty(alias.getText().toString().trim())) {
-            alias.setError("can't be empty");
+        if (TextUtils.isEmpty(etAlias.getText().toString().trim())) {
+            etAlias.setError("can't be empty");
             return false;
         }
-        if (TextUtils.isEmpty(host.getText().toString().trim())) {
-            host.setError("can't be empty");
+        if (TextUtils.isEmpty(etHost.getText().toString().trim())) {
+            etHost.setError("can't be empty");
             return false;
         }
-        if (TextUtils.isEmpty(port.getText().toString().trim())) {
-            port.setError("can't be empty\n usually default port  uses 22 ");
+        if (TextUtils.isEmpty(etPort.getText().toString().trim())) {
+            etPort.setError("can't be empty\n usually default port  uses 22 ");
             return false;
         }
-        if (TextUtils.isEmpty(username.getText().toString().trim())) {
-            username.setError("can't be empty");
+        if (TextUtils.isEmpty(etUsername.getText().toString().trim())) {
+            etUsername.setError("can't be empty");
             return false;
         }
-        if (TextUtils.isEmpty(password.getText().toString().trim())) {
-            password.setError("can't be empty");
+        if (TextUtils.isEmpty(etPassword.getText().toString().trim())) {
+            etPassword.setError("can't be empty");
             return false;
         }
 
@@ -96,24 +98,34 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
 
     private void addHost() {
         if (validation()) {
-
             db = new Data(this);
             db.open();
 
-            long l = db.insertHost(
-                    alias.getText().toString(),
-                    chekedOS(),
-                    host.getText().toString(),
-                    Integer.valueOf(port.getText().toString()),
-                    username.getText().toString(),
-                    password.getText().toString(), db.ACTIVE);
-
-
-
+            String user = etUsername.getText().toString();
+            String pass = etPassword.getText().toString();
+            String alias = etAlias.getText().toString();
+            String host = etHost.getText().toString();
+            int os = chekedOS();
+            int port = Integer.valueOf(etPort.getText().toString());
+            long id = db.insertHost(alias, os, host, port, user, pass);
             db.close();
-            Log.i(TAG, "insert : " + l);
+            if (id != -1) {
+                Intent intent = new Intent();
+                intent.putExtra("alias", alias);
+                intent.putExtra("host", host);
+                intent.putExtra("user", user);
+                intent.putExtra("pass", pass);
+                intent.putExtra("os", os);
+                intent.putExtra("id", id);
+               setResult(RESULT_OK, intent);
+                finish();
+            }else{
+                setResult(RESULT_CANCELED, null);
+                finish();
+            }
+            Log.i(TAG, "insert : " + id);
 
-            onBackPressed();
+           // onBackPressed();
         }
 
 
@@ -124,23 +136,23 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
         TextInputLayout tilAlias, tilHost, tilPort, tilUsername, tilPassword;
 
         tilAlias = (TextInputLayout) findViewById(R.id.aliasInputLayout);
-        alias = (EditText) tilAlias.findViewById(R.id.alias);
+        etAlias = (EditText) tilAlias.findViewById(R.id.alias);
         tilAlias.setHint(getString(R.string.etAlias));
 
         tilHost = (TextInputLayout) findViewById(R.id.hostInputLayout);
-        host = (EditText) tilHost.findViewById(R.id.host);
+        etHost = (EditText) tilHost.findViewById(R.id.host);
         tilHost.setHint(getString(R.string.hintHost));
 
         tilPort = (TextInputLayout) findViewById(R.id.portInputLayout);
-        port = (EditText) tilPort.findViewById(R.id.port);
+        etPort = (EditText) tilPort.findViewById(R.id.port);
         tilPort.setHint(getString(R.string.hintPort));
 
         tilUsername = (TextInputLayout) findViewById(R.id.usernameInputLayout);
-        username = (EditText) tilUsername.findViewById(R.id.username);
+        etUsername = (EditText) tilUsername.findViewById(R.id.username);
         tilUsername.setHint(getString(R.string.hintUsername));
 
         tilPassword = (TextInputLayout) findViewById(R.id.passwordInputLayout);
-        password = (EditText) tilPassword.findViewById(R.id.password);
+        etPassword = (EditText) tilPassword.findViewById(R.id.password);
         tilPassword.setHint(getString(R.string.hintPassword));
 
     }
@@ -159,13 +171,13 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
     }
 
     private void checkConnect() {
-        if(validation()){
+        if (validation()) {
             TestConnect testConnect = new TestConnect(NewHost.this);
-            testConnect.execute(new Host(alias.getText().toString(),
-                    host.getText().toString(),
-                    username.getText().toString(),
-                    password.getText().toString(),
-                    Integer.valueOf(port.getText().toString())));
+            testConnect.execute(new Host(etAlias.getText().toString(),
+                    etHost.getText().toString(),
+                    etUsername.getText().toString(),
+                    etPassword.getText().toString(),
+                    Integer.valueOf(etPort.getText().toString())));
         }
 
     }

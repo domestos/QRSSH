@@ -19,7 +19,7 @@ public class Host {
     public static final int OS_UBUNTU = 1;
 
 
-    private String alias;
+    public  String alias;
     private String host;
     private String username;
     private String password;
@@ -62,21 +62,21 @@ public class Host {
     }
 
 
-    public Host getActiveHost(Data db) {
-        if (db != null) {
-            Log.i("test", db.toString());
-            Cursor cursor = db.getActiveCursor();
-            if (cursor != null && cursor.moveToFirst()) {
-                alias = cursor.getString(cursor.getColumnIndex(Data.COLUMN_ALIAS));
-                host = (cursor.getString(cursor.getColumnIndex(Data.COLUMN_HOST)));
-                port = (cursor.getInt(cursor.getColumnIndex(Data.COLUMN_PORT)));
-                username = (cursor.getString(cursor.getColumnIndex(Data.COLUMN_USER)));
-                password = (cursor.getString(cursor.getColumnIndex(Data.COLUMN_PASS)));
-                return this;
-            }
-        }
-        return null;
-    }
+//    public Host getActiveHost(Data db) {
+//        if (db != null) {
+//            Log.i("test", db.toString());
+//            Cursor cursor = db.getActiveCursor();
+//            if (cursor != null && cursor.moveToFirst()) {
+//                alias = cursor.getString(cursor.getColumnIndex(Data.COLUMN_ALIAS));
+//                host = (cursor.getString(cursor.getColumnIndex(Data.COLUMN_HOST)));
+//                port = (cursor.getInt(cursor.getColumnIndex(Data.COLUMN_PORT)));
+//                username = (cursor.getString(cursor.getColumnIndex(Data.COLUMN_USER)));
+//                password = (cursor.getString(cursor.getColumnIndex(Data.COLUMN_PASS)));
+//                return this;
+//            }
+//        }
+//        return null;
+//    }
 
     public String getAlias() {
         return alias;

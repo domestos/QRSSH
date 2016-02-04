@@ -24,13 +24,9 @@ public class Data {
         this.context = context;
     }
 
-    public static final int NO_ACTIVE = 0;
-    public static final int ACTIVE = 1;
-
     private final String DB_DATA = "db_host";
     private final int DB_VERSION = 1;
     private final String DB_TABLE = "host";
-
 
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_ALIAS = "alias";
@@ -39,7 +35,6 @@ public class Data {
     public static final String COLUMN_USER = "user";
     public static final String COLUMN_PASS = "pass";
     public static final String COLUMN_OS = "os";
-    public static final String COLUMN_ACTIVE = "active";
 
     public void open() {
         dbHelpelr = new DBHelpelr(context, DB_DATA, null, DB_VERSION);
@@ -62,18 +57,17 @@ public class Data {
     }
 
 
-    public long insertHost(String alias, int os, String host, int port, String user, String pass, int active) {
+    public long insertHost(String alias, int os, String host, int port, String user, String pass) {
 
         db.beginTransaction();
         // change status activity
-        Cursor cursor = db.rawQuery("SELECT " + COLUMN_ID + " FROM " + DB_TABLE, null);
+       // Cursor cursor = db.rawQuery("SELECT " + COLUMN_ID + " FROM " + DB_TABLE, null);
 
-        if (cursor.getCount() != 0) {
-            offAllHost();
-        }
+//        if (cursor.getCount() != 0) {
+//            offAllHost();
+//        }
         cv.put(COLUMN_ALIAS, alias);
         cv.put(COLUMN_OS, os);
-        cv.put(COLUMN_ACTIVE, active);
         cv.put(COLUMN_HOST, host);
         cv.put(COLUMN_PORT, port);
         cv.put(COLUMN_USER, user);
@@ -81,37 +75,36 @@ public class Data {
         long rowID = db.insert(DB_TABLE, null, cv);
         db.setTransactionSuccessful();
         db.endTransaction();
-        Toast.makeText(context, cv.toString(), Toast.LENGTH_SHORT).show();
+     //   Toast.makeText(context, cv.toString(), Toast.LENGTH_SHORT).show();
         cv.clear();
         return rowID;
     }
 
-    private void offAllHost() {
-        cv.put(COLUMN_ACTIVE, NO_ACTIVE);
-        db.update(DB_TABLE, cv, COLUMN_ACTIVE + "= ?", new String[]{String.valueOf(ACTIVE)});
-        cv.clear();
-    }
-
-    public Cursor getActiveCursor() {
-        Cursor cursor = db.query(DB_TABLE, null, COLUMN_ACTIVE + "=?", new String[]{String.valueOf(ACTIVE)}, null, null, null);
-        if (cursor.getCount() == 1) {
-            return cursor;
-        }
-        return null;
-    }
-
-    public void setActivity(long id) {
-        offAllHost();
-        cv.put(COLUMN_ACTIVE, ACTIVE);
-        db.update(DB_TABLE, cv, COLUMN_ID + "= ?", new String[]{String.valueOf(id)});
-        cv.clear();
-    }
+//    private void offAllHost() {
+//        cv.put(COLUMN_ACTIVE, NO_ACTIVE);
+//        db.update(DB_TABLE, cv, COLUMN_ACTIVE + "= ?", new String[]{String.valueOf(ACTIVE)});
+//        cv.clear();
+//    }
+//
+//    public Cursor getActiveCursor() {
+//        Cursor cursor = db.query(DB_TABLE, null, COLUMN_ACTIVE + "=?", new String[]{String.valueOf(ACTIVE)}, null, null, null);
+//        if (cursor.getCount() == 1) {
+//            return cursor;
+//        }
+//        return null;
+//    }
+//
+//    public void setActivity(long id) {
+//        offAllHost();
+//        cv.put(COLUMN_ACTIVE, ACTIVE);
+//        db.update(DB_TABLE, cv, COLUMN_ID + "= ?", new String[]{String.valueOf(id)});
+//        cv.clear();
+//    }
 
     class DBHelpelr extends SQLiteOpenHelper {
         private final String DB_CREATE = "CREATE TABLE " + DB_TABLE + " ( " +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COLUMN_OS + " INTEGER, " +
-                COLUMN_ACTIVE + " INTEGER, " +
                 COLUMN_ALIAS + " TEXT, " +
                 COLUMN_HOST + " TEXT, " +
                 COLUMN_PORT + " INTEGER, " +

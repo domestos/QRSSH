@@ -2,11 +2,9 @@ package com.example.vpelenskyi.qrssh;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -18,26 +16,20 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
 
 import com.example.vpelenskyi.qrssh.database.Data;
 import com.example.vpelenskyi.qrssh.host.Host;
 import com.example.vpelenskyi.qrssh.host.NewHost;
 import com.example.vpelenskyi.qrssh.sshclient.SSH;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 
 import java.util.ArrayList;
-import java.util.Properties;
 
 public class MainQRSSH extends AppCompatActivity {
     final int CM_DELETE_HOST = 0;
     final int CM_EDIT_HOST = 1;
 
+    private int INTEN_ADD_HOST = 1;
     private String TAG = "ssh_log";
     public ArrayList<Host> hosts;
     private HostAdapter hostAdapter;
@@ -61,7 +53,6 @@ public class MainQRSSH extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.lvHost);
         registerForContextMenu(listView);
 
-
         //TOOLBAR
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -72,18 +63,47 @@ public class MainQRSSH extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), NewHost.class);
-                startActivity(intent);
+                startActivityForResult(intent, INTEN_ADD_HOST);
+                //      startActivity(intent);
             }
         });
 
-        listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
+        hostAdapter = new HostAdapter(MainQRSSH.this, hosts);
+        listView.setAdapter(hostAdapter);
         new QRSSHAsynkTask().execute(hosts);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case 1:
+                if (resultCode == RESULT_OK) {
+                    hosts.add(new Host(
+                            data.getStringExtra("alias"),
+                            data.getStringExtra("host"),
+                            data.getIntExtra("port", 22),
+                            data.getStringExtra("user"),
+                            data.getStringExtra("pass"),
+                            data.getIntExtra("os", 0),
+                            false,
+                            data.getIntExtra("id", -1)));
+                    Log.i(TAG, "successful add host");
+                    listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
+                    hosts = getHosts();
+                    Log.i(TAG, "onActivityResult = size cursor " + cursor.getCount());
+                    Log.i(TAG, "onActivityResult = size ArrayLisy " + hosts.size());
+                    new QRSSHAsynkTask().execute(hosts);
+                }
+                break;
+        }
+
+    }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
         db.close();
     }
 
@@ -91,11 +111,8 @@ public class MainQRSSH extends AppCompatActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
-        hosts = getHosts();
-        Log.i(TAG, "onRestart = size cursor " + cursor.getCount());
-        Log.i(TAG, "onRestart = size ArrayLisy " + hosts.size());
-        listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
-        new QRSSHAsynkTask().execute(hosts);
+        hostAdapter.notifyDataSetChanged();
+
     }
 
     @Override
@@ -207,7 +224,8 @@ public class MainQRSSH extends AppCompatActivity {
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
-            listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
+            //hostAdapter.notifyDataSetChanged();
+             listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
 
             progressDialog.dismiss();
         }

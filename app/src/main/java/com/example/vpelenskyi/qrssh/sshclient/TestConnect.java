@@ -91,7 +91,7 @@ public class TestConnect extends AsyncTask<Host, Void, Boolean> {
         return session.isConnected();
     }
 
-    
+
     protected void onPostExecute(Session session) {
         if (session.isConnected()) {
             Toast.makeText(contHost, "Connect", Toast.LENGTH_LONG).show();
