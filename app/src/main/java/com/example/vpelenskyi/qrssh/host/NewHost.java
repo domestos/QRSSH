@@ -30,7 +30,7 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
     private Button btnSaveHost, btnCheckConnect;
     private RadioGroup rgOS;
     private RadioButton rbWindows, rbUbuntu;
-    Data db;
+    private Data db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

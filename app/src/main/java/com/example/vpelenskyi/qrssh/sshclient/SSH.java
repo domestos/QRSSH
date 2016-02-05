@@ -18,6 +18,7 @@ public class SSH {
     private Session session;
     private JSch jSch;
 
+
     public boolean openSession(Host host) {
         jSch = new JSch();
         try {

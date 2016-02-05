@@ -26,12 +26,12 @@ import com.example.vpelenskyi.qrssh.sshclient.SSH;
 import java.util.ArrayList;
 
 public class MainQRSSH extends AppCompatActivity {
+
     final int CM_DELETE_HOST = 0;
     final int CM_EDIT_HOST = 1;
-
-    private int INTEN_ADD_HOST = 1;
+    private int INT_ADD_HOST = 1;
     private String TAG = "ssh_log";
-    public ArrayList<Host> hosts;
+    public static ArrayList<Host> hosts;
     private HostAdapter hostAdapter;
     private ListView listView;
     private Data db;
@@ -63,22 +63,44 @@ public class MainQRSSH extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), NewHost.class);
-                startActivityForResult(intent, INTEN_ADD_HOST);
-                //      startActivity(intent);
+                startActivityForResult(intent, INT_ADD_HOST);
             }
         });
 
         hostAdapter = new HostAdapter(MainQRSSH.this, hosts);
         listView.setAdapter(hostAdapter);
         new QRSSHAsynkTask().execute(hosts);
+
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                Log.i(TAG," parent "+parent.getCount()+" position "+position+" id "+id);
+                host = hosts.get(position);
+                Log.i(TAG, hosts.get(position).getAlias());
+                Intent intent = new Intent(getApplicationContext(), ActivityHost.class);
+                intent.putExtra("alias", host.getAlias());
+                intent.putExtra("host", host.getHost());
+                intent.putExtra("port", host.getPort());
+                intent.putExtra("user", host.getUsername());
+                intent.putExtra("pass", host.getPassword());
+                intent.putExtra("os", host.getOs());
+                intent.putExtra("id", host.getId());
+                startActivity(intent);
+
+            }
+        });
+
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case 1:
-                if (resultCode == RESULT_OK) {
+
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case 1:
                     hosts.add(new Host(
                             data.getStringExtra("alias"),
                             data.getStringExtra("host"),
@@ -94,11 +116,12 @@ public class MainQRSSH extends AppCompatActivity {
                     Log.i(TAG, "onActivityResult = size cursor " + cursor.getCount());
                     Log.i(TAG, "onActivityResult = size ArrayLisy " + hosts.size());
                     new QRSSHAsynkTask().execute(hosts);
-                }
-                break;
+                    break;
+            }
         }
 
     }
+
 
     @Override
     protected void onDestroy() {
@@ -106,7 +129,6 @@ public class MainQRSSH extends AppCompatActivity {
 
         db.close();
     }
-
 
     @Override
     protected void onRestart() {
@@ -127,7 +149,6 @@ public class MainQRSSH extends AppCompatActivity {
         AdapterView.AdapterContextMenuInfo acmi;
         switch (item.getItemId()) {
             case CM_DELETE_HOST:
-
                 acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
                 int p = acmi.position;
                 Log.i(TAG, "positin  " + acmi.position + " id " + acmi.id + " alias " +
@@ -135,12 +156,9 @@ public class MainQRSSH extends AppCompatActivity {
                 int del = db.deleteItem(hosts.get(p).getId());
                 Log.i(TAG, "del " + del);
                 hosts.remove(p);
-
                 listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
                 hosts = getHosts();
                 new QRSSHAsynkTask().execute(hosts);
-
-
                 return true;
             case CM_EDIT_HOST:
                 //need write code
@@ -158,7 +176,7 @@ public class MainQRSSH extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item)  {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             return true;
@@ -186,6 +204,8 @@ public class MainQRSSH extends AppCompatActivity {
         Log.i(TAG, "count cursor = " + hosts.size());
         return hosts;
     }
+
+
 
     public class QRSSHAsynkTask extends AsyncTask<ArrayList<Host>, Void, Boolean> {
 
@@ -225,7 +245,7 @@ public class MainQRSSH extends AppCompatActivity {
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
             //hostAdapter.notifyDataSetChanged();
-             listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
+            listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
 
             progressDialog.dismiss();
         }

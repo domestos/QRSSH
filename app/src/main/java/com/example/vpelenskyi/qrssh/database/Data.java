@@ -56,9 +56,7 @@ public class Data {
 
     }
 
-
     public long insertHost(String alias, int os, String host, int port, String user, String pass) {
-
         db.beginTransaction();
         // change status activity
        // Cursor cursor = db.rawQuery("SELECT " + COLUMN_ID + " FROM " + DB_TABLE, null);
