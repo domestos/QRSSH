@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.vpelenskyi.qrssh.ActivityHost;
 import com.example.vpelenskyi.qrssh.host.Host;
 import com.example.vpelenskyi.qrssh.host.NewHost;
 import com.jcraft.jsch.JSch;
@@ -32,6 +33,10 @@ public class TestConnect extends AsyncTask<Host, Void, Boolean> {
         this.contHost = contHost;
     }
 
+    public TestConnect(ActivityHost contHost) {
+
+        this.contHost = contHost;
+    }
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
@@ -92,15 +97,15 @@ public class TestConnect extends AsyncTask<Host, Void, Boolean> {
     }
 
 
-    protected void onPostExecute(Session session) {
-        if (session.isConnected()) {
+    protected void onPostExecute(Boolean aBoolean) {
+//        super.onPostExecute(session.isConnected());
+        if (aBoolean) {
             Toast.makeText(contHost, "Connect", Toast.LENGTH_LONG).show();
         } else {
             Toast.makeText(contHost, "NO Connect", Toast.LENGTH_LONG).show();
 
         }
         progressDialog.dismiss();
-        super.onPostExecute(session.isConnected());
     }
 
 

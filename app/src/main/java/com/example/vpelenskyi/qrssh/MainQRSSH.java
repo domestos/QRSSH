@@ -36,7 +36,7 @@ public class MainQRSSH extends AppCompatActivity {
     private ListView listView;
     private Data db;
     private Cursor cursor;
-    public Host host;
+    public static Host host;
 
     //   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -76,19 +76,20 @@ public class MainQRSSH extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                Log.i(TAG," parent "+parent.getCount()+" position "+position+" id "+id);
+                Log.i(TAG, " parent " + parent.getCount() + " position " + position + " id " + id);
                 host = hosts.get(position);
                 Log.i(TAG, hosts.get(position).getAlias());
                 Intent intent = new Intent(getApplicationContext(), ActivityHost.class);
-                intent.putExtra("alias", host.getAlias());
-                intent.putExtra("host", host.getHost());
-                intent.putExtra("port", host.getPort());
-                intent.putExtra("user", host.getUsername());
-                intent.putExtra("pass", host.getPassword());
-                intent.putExtra("os", host.getOs());
-                intent.putExtra("id", host.getId());
+//                intent.putExtra("alias", host.getAlias());
+//                intent.putExtra("host", host.getHost());
+//                intent.putExtra("port", host.getPort());
+//                intent.putExtra("user", host.getUsername());
+//                intent.putExtra("pass", host.getPassword());
+//                intent.putExtra("os", host.getOs());
+//                intent.putExtra("id", host.getId());
                 startActivity(intent);
-
+                // host=null;
+//
             }
         });
 
@@ -176,7 +177,7 @@ public class MainQRSSH extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)  {
+    public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             return true;
@@ -206,9 +207,8 @@ public class MainQRSSH extends AppCompatActivity {
     }
 
 
-
     public class QRSSHAsynkTask extends AsyncTask<ArrayList<Host>, Void, Boolean> {
-
+        SSH ssh = new SSH();
         private ProgressDialog progressDialog;
 
         @Override
@@ -223,12 +223,12 @@ public class MainQRSSH extends AppCompatActivity {
                 public void onClick(DialogInterface dialog, int which) {
                 }
             });
-            //     progressDialog.show();
+            progressDialog.show();
         }
 
         @Override
         protected Boolean doInBackground(ArrayList... params) {
-            SSH ssh = new SSH();
+
             for (ArrayList<Host> arrayList : params) {
                 for (int i = 0; arrayList.size() > i; i++) {
                     arrayList.get(i).setHostConnect(ssh.openSession(arrayList.get(i)));
