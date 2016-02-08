@@ -132,7 +132,7 @@ public class SSH {
                         break;
                     }
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(100);
                     } catch (Exception ee) {
                     }
                 }

@@ -51,19 +51,12 @@ public class Data {
         return db.query(DB_TABLE, null, null, null, null, null, null);
     }
 
-    public int deleteItem(long id) {
+    public int deleteHost(long id) {
         return db.delete(DB_TABLE, COLUMN_ID + " =" + id, null);
-
     }
 
     public long insertHost(String alias, int os, String host, int port, String user, String pass) {
         db.beginTransaction();
-        // change status activity
-       // Cursor cursor = db.rawQuery("SELECT " + COLUMN_ID + " FROM " + DB_TABLE, null);
-
-//        if (cursor.getCount() != 0) {
-//            offAllHost();
-//        }
         cv.put(COLUMN_ALIAS, alias);
         cv.put(COLUMN_OS, os);
         cv.put(COLUMN_HOST, host);
@@ -73,31 +66,9 @@ public class Data {
         long rowID = db.insert(DB_TABLE, null, cv);
         db.setTransactionSuccessful();
         db.endTransaction();
-     //   Toast.makeText(context, cv.toString(), Toast.LENGTH_SHORT).show();
         cv.clear();
         return rowID;
     }
-
-//    private void offAllHost() {
-//        cv.put(COLUMN_ACTIVE, NO_ACTIVE);
-//        db.update(DB_TABLE, cv, COLUMN_ACTIVE + "= ?", new String[]{String.valueOf(ACTIVE)});
-//        cv.clear();
-//    }
-//
-//    public Cursor getActiveCursor() {
-//        Cursor cursor = db.query(DB_TABLE, null, COLUMN_ACTIVE + "=?", new String[]{String.valueOf(ACTIVE)}, null, null, null);
-//        if (cursor.getCount() == 1) {
-//            return cursor;
-//        }
-//        return null;
-//    }
-//
-//    public void setActivity(long id) {
-//        offAllHost();
-//        cv.put(COLUMN_ACTIVE, ACTIVE);
-//        db.update(DB_TABLE, cv, COLUMN_ID + "= ?", new String[]{String.valueOf(id)});
-//        cv.clear();
-//    }
 
     class DBHelpelr extends SQLiteOpenHelper {
         private final String DB_CREATE = "CREATE TABLE " + DB_TABLE + " ( " +

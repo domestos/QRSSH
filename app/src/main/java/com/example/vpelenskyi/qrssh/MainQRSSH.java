@@ -27,18 +27,20 @@ import java.util.ArrayList;
 
 public class MainQRSSH extends AppCompatActivity {
 
+    private String TAG = "ssh_log";
+    private ListView listView;
+
     final int CM_DELETE_HOST = 0;
     final int CM_EDIT_HOST = 1;
     private int INT_ADD_HOST = 1;
-    private String TAG = "ssh_log";
-    private Cursor cursor;
+
+    private HostAdapter hostAdapter;
     public static ArrayList<Host> hosts;
     public static Host host;
-    private HostAdapter hostAdapter;
-    private ListView listView;
+
+    private Cursor cursor;
     private Data db;
 
-    //   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,7 +77,6 @@ public class MainQRSSH extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
                 Log.i(TAG, " parent " + parent.getCount() + " position " + position + " id " + id);
                 host = hosts.get(position);
                 Log.i(TAG, hosts.get(position).getAlias());
@@ -118,7 +119,6 @@ public class MainQRSSH extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         db.close();
     }
 
@@ -126,7 +126,6 @@ public class MainQRSSH extends AppCompatActivity {
     protected void onRestart() {
         super.onRestart();
         hostAdapter.notifyDataSetChanged();
-
     }
 
     @Override
@@ -145,7 +144,7 @@ public class MainQRSSH extends AppCompatActivity {
                 int p = acmi.position;
                 Log.i(TAG, "positin  " + acmi.position + " id " + acmi.id + " alias " +
                         hosts.get(p).getAlias());
-                int del = db.deleteItem(hosts.get(p).getId());
+                int del = db.deleteHost(hosts.get(p).getId());
                 Log.i(TAG, "del " + del);
                 hosts.remove(p);
                 listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
@@ -156,7 +155,6 @@ public class MainQRSSH extends AppCompatActivity {
                 //need write code
                 return true;
         }
-
         return super.onContextItemSelected(item);
     }
 
@@ -205,11 +203,9 @@ public class MainQRSSH extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-
             progressDialog = new ProgressDialog(MainQRSSH.this);
             progressDialog.setTitle("Check connect to ssh Host");
             progressDialog.setMessage("pleas wait");
-
             progressDialog.setButton(Dialog.BUTTON_POSITIVE, "Cancel", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                 }
@@ -219,7 +215,6 @@ public class MainQRSSH extends AppCompatActivity {
 
         @Override
         protected Boolean doInBackground(ArrayList... params) {
-
             for (ArrayList<Host> arrayList : params) {
                 for (int i = 0; arrayList.size() > i; i++) {
                     arrayList.get(i).setHostConnect(ssh.openSession(arrayList.get(i)));
@@ -234,7 +229,6 @@ public class MainQRSSH extends AppCompatActivity {
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
             listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
-
             progressDialog.dismiss();
         }
     }

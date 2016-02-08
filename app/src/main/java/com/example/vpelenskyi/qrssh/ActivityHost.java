@@ -54,12 +54,10 @@ public class ActivityHost extends AppCompatActivity implements View.OnClickListe
         btnSendUrl.setOnClickListener(this);
     }
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
         ssh.close();
-
     }
 
     @Override
@@ -68,7 +66,7 @@ public class ActivityHost extends AppCompatActivity implements View.OnClickListe
         new AsynkActivityHost().execute(MainQRSSH.host);
     }
 
-
+    //============= INTO CLASS ===================
     class AsynkActivityHost extends AsyncTask<Host, Void, Boolean> {
         @Override
         protected void onPreExecute() {
@@ -87,7 +85,6 @@ public class ActivityHost extends AppCompatActivity implements View.OnClickListe
                     }
                 }
             }
-
             session = ssh.getSession();
             ssh.openChannel(session);
             if (url != null & !url.isEmpty()) {
@@ -95,7 +92,6 @@ public class ActivityHost extends AppCompatActivity implements View.OnClickListe
             } else {
                 Log.i(TAG, "url is empty");
             }
-
             Log.i(TAG, " AsynkActivityHost ssh.getSession() " + ssh.getSession().hashCode());
             Log.i(TAG, " AsynkActivityHost ssh " + ssh.hashCode());
             return ssh.getSession().isConnected();
@@ -104,7 +100,10 @@ public class ActivityHost extends AppCompatActivity implements View.OnClickListe
         private String createCommand(Host host) {
             switch (host.getOs()) {
                 case Host.OS_UBUNTU:
-                    command = "DISPLAY=:0 nohup gnome-open \"" + url + "\"";
+                    command = "DISPLAY=:0 firefox \"" + url + "\"";
+//                    command = "DISPLAY=:0 nohup gnome-open \"" + url + "\"";
+//                    command = "DISPLAY=:0 gvfs-open  \"" + url + "\"";
+//                    command = "DISPLAY=:0 x-www-browser  \"" + url + "\"";
                     break;
                 case Host.OS_WINDOWS:
                     command = "cmd.exe /u /c \"start " + url + "\"";
@@ -123,7 +122,7 @@ public class ActivityHost extends AppCompatActivity implements View.OnClickListe
             }
 
         }
-
+        //============= END INTO CLASS ===================
 
     }
 
