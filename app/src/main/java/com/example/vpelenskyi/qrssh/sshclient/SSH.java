@@ -2,6 +2,7 @@ package com.example.vpelenskyi.qrssh.sshclient;
 
 import android.util.Log;
 
+import com.example.vpelenskyi.qrssh.MainQRSSH;
 import com.example.vpelenskyi.qrssh.host.Host;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
@@ -15,11 +16,24 @@ import java.util.Properties;
  * Created by v.pelenskyi on 03.02.2016.
  */
 public class SSH {
+
+    private static SSH instanceSSH;
     private int timeOut = 3000;
     private String TAG = "ssh_log";
-    private Session session;
+    private static Session session;
     private JSch jSch = new JSch();
     private Channel channelExe;
+
+
+    private SSH() {
+    }
+
+    public static synchronized SSH getInstanceSSH() {
+        if (instanceSSH == null) {
+            instanceSSH = new SSH();
+        }
+        return instanceSSH;
+    }
 
     public boolean openSession(Host host) {
 
@@ -63,9 +77,8 @@ public class SSH {
         }
     }
 
-
     public void close() {
-        if (session.isConnected() | session != null) {
+        if (session != null && session.isConnected()) {
             session.disconnect();
             Log.i(TAG, "close() connected session = " + session.isConnected());
             Log.i(TAG, "close() session = " + session.hashCode());
@@ -82,4 +95,14 @@ public class SSH {
     }
 
 
+    public void sendCommand(String command) {
+        ((ChannelExec) channelExe).setCommand(command);
+        ((ChannelExec) channelExe).setErrStream(System.err);
+        try {
+            channelExe.connect();
+        } catch (JSchException e) {
+            e.printStackTrace();
+        }
+
+    }
 }

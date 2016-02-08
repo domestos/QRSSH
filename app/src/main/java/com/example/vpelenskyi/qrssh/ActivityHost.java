@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -19,49 +20,100 @@ import com.jcraft.jsch.Session;
  */
 
 
-public class ActivityHost extends AppCompatActivity {
+public class ActivityHost extends AppCompatActivity implements View.OnClickListener {
     private String TAG = "ssh_log";
     private TextView tvAlias;
     private TextView tvHost;
     private EditText edUrl;
     private Button btnSendUrl;
     private SSH ssh;
-  //  private Session session;
-
+    private Session session;
+    private String url;
+    private String command = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_connect_host);
-        ssh = new SSH();
 
+        setContentView(R.layout.activity_connect_host);
+        ssh = SSH.getInstanceSSH();
+        Log.i(TAG, " onCreate init ssh class  " + ssh.hashCode());
         tvAlias = (TextView) findViewById(R.id.tvAlias);
         tvHost = (TextView) findViewById(R.id.tvHost);
         edUrl = (EditText) findViewById(R.id.edUrl);
         btnSendUrl = (Button) findViewById(R.id.btnSendUrl);
 
-
-        if(MainQRSSH.host != null) {
-
+        if (MainQRSSH.host != null) {
             tvAlias.setText(MainQRSSH.host.getAlias());
             tvHost.setText(MainQRSSH.host.getHost() + " : " + MainQRSSH.host.getPort());
             new TestConnect(ActivityHost.this).execute(MainQRSSH.host);
-      //      new AsynkActivityHost().execute(MainQRSSH.host);
             Log.i(TAG, MainQRSSH.host.toString());
+        } else {
+            onBackPressed();
         }
+        btnSendUrl.setOnClickListener(this);
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+//            if(session !=null && session.isConnected()){
+//
+//                session.disconnect();
+//            }
+
+        ssh.close();
 
     }
 
+    @Override
+    public void onClick(View v) {
+        url = edUrl.getText().toString();
+        new AsynkActivityHost().execute(MainQRSSH.host);
+    }
+
+
     class AsynkActivityHost extends AsyncTask<Host, Void, Boolean> {
-        private Session session;
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
         @Override
         protected Boolean doInBackground(Host... params) {
-            boolean aBoolean = false;
-            for (Host h : params) {
-                aBoolean = ssh.openSession(h);
-
+            for (Host host : params) {
+                command = createCommand(host);
+                if (session != null) {
+                    if (!session.isConnected()) {
+                        ssh.openSession(host);
+                    }
+                }
             }
-            return aBoolean;
+
+            session = ssh.getSession();
+            ssh.openChannel(session);
+            if (url != null & !url.isEmpty()) {
+                ssh.sendCommand(command);
+            } else {
+                Log.i(TAG, "url is empty");
+            }
+
+            //     Log.i(TAG, " AsynkActivityHost ssh.getSession() " + ssh.getSession().hashCode());
+            Log.i(TAG, " AsynkActivityHost ssh " + ssh.hashCode());
+            return ssh.getSession().isConnected();
+        }
+
+        private String createCommand(Host host) {
+            switch (host.getOs()) {
+                case Host.OS_UBUNTU:
+                    command = "DISPLAY=:0 nohup gnome-open \"" + url + "\"";
+                    break;
+                case Host.OS_WINDOWS:
+                    command = "cmd.exe /u /c \"start " + url + "\"";
+                    break;
+            }
+            return command;
         }
 
         @Override
@@ -72,10 +124,11 @@ public class ActivityHost extends AppCompatActivity {
             } else {
                 tvAlias.setTextColor(Color.RED);
             }
-            session = ssh.getSession();
-            Log.i(TAG," AsynkActivityHost ssh.getSession() "+session.hashCode());
-            Log.i(TAG, " AsynkActivityHost ssh " + ssh.hashCode());
+
         }
+
+
     }
+
 
 }

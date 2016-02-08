@@ -31,12 +31,12 @@ public class MainQRSSH extends AppCompatActivity {
     final int CM_EDIT_HOST = 1;
     private int INT_ADD_HOST = 1;
     private String TAG = "ssh_log";
+    private Cursor cursor;
     public static ArrayList<Host> hosts;
+    public static Host host;
     private HostAdapter hostAdapter;
     private ListView listView;
     private Data db;
-    private Cursor cursor;
-    public static Host host;
 
     //   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -208,7 +208,7 @@ public class MainQRSSH extends AppCompatActivity {
 
 
     public class QRSSHAsynkTask extends AsyncTask<ArrayList<Host>, Void, Boolean> {
-        SSH ssh = new SSH();
+        SSH ssh = SSH.getInstanceSSH();
         private ProgressDialog progressDialog;
 
         @Override

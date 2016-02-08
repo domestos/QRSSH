@@ -22,87 +22,55 @@ import java.util.Properties;
  */
 public class TestConnect extends AsyncTask<Host, Void, Boolean> {
 
-    private String TAG = "log_ssh";
+    private String TAG = "ssh_log";
     Session session;
     JSch jSch;
-    private Context contHost;
+    private Context context;
     boolean running;
     ProgressDialog progressDialog;
-    public TestConnect(NewHost contHost) {
 
-        this.contHost = contHost;
+    public TestConnect(NewHost context) {
+        this.context = context;
     }
 
-    public TestConnect(ActivityHost contHost) {
-
-        this.contHost = contHost;
+    public TestConnect(ActivityHost context) {
+        this.context = context;
     }
+
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        jSch = new JSch();
 
-        progressDialog = new ProgressDialog(contHost);
+        jSch = new JSch();
+        progressDialog = new ProgressDialog(context);
         progressDialog.setTitle("Connect to ssh Host");
         progressDialog.setMessage("pleas wait");
-
         progressDialog.setButton(Dialog.BUTTON_POSITIVE, "Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
             }
         });
         progressDialog.show();
-
-
     }
 
     @Override
     protected Boolean doInBackground(Host... params) {
+        boolean testConnect = false;
         if (params.length == 1) {
-
+            SSH ssh = SSH.getInstanceSSH();
             for (Host host : params) {
-                Log.i(TAG, "hist values:" + host.getUsername() + " " + host.getHost() + " " + host.getPort());
-                try {
-                    session = jSch.getSession(
-                            host.getUsername(),
-                            host.getHost(),
-                            host.getPort()
-                    );
-                } catch (JSchException e) {
-                    e.printStackTrace();
-                    Log.e(TAG, "session = jSch.getSession() give the error " + e.getMessage());
-
-                }
-                session.setPassword(host.getPassword());
-
-                Properties config = new Properties();
-                config.put("StrictHostKeyChecking", "no");
-                config.put("compression.s2c", "zlib,none");
-                config.put("compression.c2s", "zlib,none");
-
-                session.setConfig("PreferredAuthentications",
-                        "password"); //add this line to your code
-
-                session.setConfig(config);
-                try {
-                    session.connect(5000);
-                } catch (JSchException e) {
-                    e.printStackTrace();
-                    Log.e(TAG, "session.connect give the error " + e);
-                }
+                testConnect = ssh.openSession(host);
             }
-
-
         }
-        return session.isConnected();
+        return testConnect;
     }
 
 
     protected void onPostExecute(Boolean aBoolean) {
 //        super.onPostExecute(session.isConnected());
         if (aBoolean) {
-            Toast.makeText(contHost, "Connect", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Connect", Toast.LENGTH_LONG).show();
         } else {
-            Toast.makeText(contHost, "NO Connect", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "NO Connect", Toast.LENGTH_LONG).show();
 
         }
         progressDialog.dismiss();
