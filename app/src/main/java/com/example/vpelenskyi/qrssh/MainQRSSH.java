@@ -80,16 +80,7 @@ public class MainQRSSH extends AppCompatActivity {
                 host = hosts.get(position);
                 Log.i(TAG, hosts.get(position).getAlias());
                 Intent intent = new Intent(getApplicationContext(), ActivityHost.class);
-//                intent.putExtra("alias", host.getAlias());
-//                intent.putExtra("host", host.getHost());
-//                intent.putExtra("port", host.getPort());
-//                intent.putExtra("user", host.getUsername());
-//                intent.putExtra("pass", host.getPassword());
-//                intent.putExtra("os", host.getOs());
-//                intent.putExtra("id", host.getId());
                 startActivity(intent);
-                // host=null;
-//
             }
         });
 
@@ -235,8 +226,6 @@ public class MainQRSSH extends AppCompatActivity {
                     Log.i(TAG, arrayList.get(i).toString());
                     ssh.close();
                 }
-
-
             }
             return true;
         }
@@ -244,7 +233,6 @@ public class MainQRSSH extends AppCompatActivity {
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
-            //hostAdapter.notifyDataSetChanged();
             listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
 
             progressDialog.dismiss();

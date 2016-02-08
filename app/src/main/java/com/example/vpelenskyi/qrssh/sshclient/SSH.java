@@ -10,6 +10,8 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 /**
@@ -18,7 +20,7 @@ import java.util.Properties;
 public class SSH {
 
     private static SSH instanceSSH;
-    private int timeOut = 3000;
+    private int timeOut = 1000;
     private String TAG = "ssh_log";
     private static Session session;
     private JSch jSch = new JSch();
@@ -67,7 +69,7 @@ public class SSH {
     }
 
     public void openChannel(Session session) {
-        if (session != null || session.isConnected()) {
+        if (session != null & session.isConnected()) {
             try {
                 channelExe = session.openChannel("exec");
             } catch (JSchException e) {
@@ -96,12 +98,45 @@ public class SSH {
 
 
     public void sendCommand(String command) {
-        ((ChannelExec) channelExe).setCommand(command);
-        ((ChannelExec) channelExe).setErrStream(System.err);
-        try {
-            channelExe.connect();
-        } catch (JSchException e) {
-            e.printStackTrace();
+        if (channelExe!=null && !channelExe.isClosed()) {
+            ((ChannelExec) channelExe).setCommand(command);
+            ((ChannelExec) channelExe).setErrStream(System.err);
+            InputStream in = null;
+            try {
+                in = channelExe.getInputStream();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                channelExe.connect();
+            } catch (JSchException e) {
+                e.printStackTrace();
+
+            }
+
+            byte[] tmp = new byte[1024];
+            if (in != null) {
+                while (true) {
+                    try {
+                        while (in.available() > 0) {
+                            int i = in.read(tmp, 0, 1024);
+                            if (i < 0) break;
+                            System.out.print(new String(tmp, 0, i));
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    if (channelExe.isClosed()) {
+                        Log.i(TAG, "exit-status: " + channelExe.getExitStatus());
+                        System.out.println("exit-status: " + channelExe.getExitStatus());
+                        break;
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Exception ee) {
+                    }
+                }
+            }
         }
 
     }

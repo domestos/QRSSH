@@ -58,11 +58,6 @@ public class ActivityHost extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//            if(session !=null && session.isConnected()){
-//
-//                session.disconnect();
-//            }
-
         ssh.close();
 
     }
@@ -84,8 +79,10 @@ public class ActivityHost extends AppCompatActivity implements View.OnClickListe
         protected Boolean doInBackground(Host... params) {
             for (Host host : params) {
                 command = createCommand(host);
+                // restart session if she was lost (disconnect)
                 if (session != null) {
                     if (!session.isConnected()) {
+                        Log.i(TAG, "isConnected()  = " + session.isConnected());
                         ssh.openSession(host);
                     }
                 }
@@ -99,7 +96,7 @@ public class ActivityHost extends AppCompatActivity implements View.OnClickListe
                 Log.i(TAG, "url is empty");
             }
 
-            //     Log.i(TAG, " AsynkActivityHost ssh.getSession() " + ssh.getSession().hashCode());
+            Log.i(TAG, " AsynkActivityHost ssh.getSession() " + ssh.getSession().hashCode());
             Log.i(TAG, " AsynkActivityHost ssh " + ssh.hashCode());
             return ssh.getSession().isConnected();
         }
