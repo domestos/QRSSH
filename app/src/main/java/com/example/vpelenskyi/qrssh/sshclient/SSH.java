@@ -20,7 +20,7 @@ import java.util.Properties;
 public class SSH {
 
     private static SSH instanceSSH;
-    private int timeOut = 1000;
+    private int timeOut = 3000;
     private String TAG = "ssh_log";
     private static Session session;
     private JSch jSch = new JSch();

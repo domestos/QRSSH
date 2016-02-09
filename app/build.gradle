@@ -26,4 +26,5 @@ dependencies {
     compile 'com.android.support:design:23.1.1'
     compile 'com.android.support:design:22.2.0'
     compile project(':jsch-0.1.53')
+    compile 'com.google.zxing:android-integration:3.2.1'
 }
