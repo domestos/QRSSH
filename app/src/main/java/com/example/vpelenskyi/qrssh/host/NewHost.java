@@ -14,10 +14,9 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 
-import com.example.vpelenskyi.qrssh.MainQRSSH;
 import com.example.vpelenskyi.qrssh.R;
 import com.example.vpelenskyi.qrssh.database.Data;
-import com.example.vpelenskyi.qrssh.sshclient.TestConnect;
+import com.example.vpelenskyi.qrssh.sshclient.AsynckCreatSession;
 
 /**
  * Created by v.pelenskyi on 22.12.2015.
@@ -172,8 +171,8 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
 
     private void checkConnect() {
         if (validation()) {
-            TestConnect testConnect = new TestConnect(NewHost.this);
-            testConnect.execute(new Host(etAlias.getText().toString(),
+            AsynckCreatSession asynckCreatSession = new AsynckCreatSession(NewHost.this);
+            asynckCreatSession.execute(new Host(etAlias.getText().toString(),
                     etHost.getText().toString(),
                     etUsername.getText().toString(),
                     etPassword.getText().toString(),

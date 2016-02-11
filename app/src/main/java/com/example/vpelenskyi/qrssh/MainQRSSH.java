@@ -25,7 +25,7 @@ import com.example.vpelenskyi.qrssh.sshclient.SSH;
 
 import java.util.ArrayList;
 
-public class MainQRSSH extends AppCompatActivity {
+public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
     private String TAG = "ssh_log";
     private ListView listView;
@@ -34,10 +34,11 @@ public class MainQRSSH extends AppCompatActivity {
     final int CM_EDIT_HOST = 1;
     private int INT_ADD_HOST = 1;
 
-    private HostAdapter hostAdapter;
     public static ArrayList<Host> hosts;
     public static Host host;
 
+    private TaskMainQRSSH TaskMainQRSSH;
+    private BaseAdapterHost baseAdapterHost;
     private Cursor cursor;
     private Data db;
 
@@ -45,20 +46,16 @@ public class MainQRSSH extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_qrssh);
-
         //OPEN DATA BASE
         db = new Data(this);
         db.open();
-        hosts = getHosts();
-
-        //LIST VIEW
-        listView = (ListView) findViewById(R.id.lvHost);
-        registerForContextMenu(listView);
-
+        //singleton hosts
+        if (hosts == null) {
+            hosts = getHosts();
+        }
         //TOOLBAR
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         //FLOATIONG ACTION BUTTON
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.addHost);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -68,23 +65,35 @@ public class MainQRSSH extends AppCompatActivity {
                 startActivityForResult(intent, INT_ADD_HOST);
             }
         });
+        //find, show, setMenu, setOnClickItem ViewList
+        listView = (ListView) findViewById(R.id.lvHost);
+        baseAdapterHost = new BaseAdapterHost(MainQRSSH.this, hosts);
+        listView.setAdapter(baseAdapterHost);
+        registerForContextMenu(listView);
+        listView.setOnItemClickListener(this);
+        //Run AsyncTask only one when open APP
+        runTask();
+    }
 
-        hostAdapter = new HostAdapter(MainQRSSH.this, hosts);
-        listView.setAdapter(hostAdapter);
-        new QRSSHAsynkTask().execute(hosts);
+    /**
+     *
+     */
+    public void runTask() {
+        TaskMainQRSSH = (TaskMainQRSSH) getLastCustomNonConfigurationInstance();
+        if (TaskMainQRSSH == null) {
+            TaskMainQRSSH = new TaskMainQRSSH();
+        }
+        TaskMainQRSSH.link(this);
+        if (TaskMainQRSSH.getStatus() != AsyncTask.Status.RUNNING &&
+                TaskMainQRSSH.getStatus() != AsyncTask.Status.FINISHED) {
+            TaskMainQRSSH.execute(hosts);
+        }
+    }
 
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.i(TAG, " parent " + parent.getCount() + " position " + position + " id " + id);
-                host = hosts.get(position);
-                Log.i(TAG, hosts.get(position).getAlias());
-                Intent intent = new Intent(getApplicationContext(), ActivityHost.class);
-                startActivity(intent);
-            }
-        });
-
+    @Override
+    public Object onRetainCustomNonConfigurationInstance() {
+        TaskMainQRSSH.unLink();
+        return TaskMainQRSSH;
     }
 
     @Override
@@ -104,11 +113,11 @@ public class MainQRSSH extends AppCompatActivity {
                             false,
                             data.getIntExtra("id", -1)));
                     Log.i(TAG, "successful add host");
-                    listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
+                    listView.setAdapter(new BaseAdapterHost(MainQRSSH.this, hosts));
                     hosts = getHosts();
                     Log.i(TAG, "onActivityResult = size cursor " + cursor.getCount());
                     Log.i(TAG, "onActivityResult = size ArrayLisy " + hosts.size());
-                    new QRSSHAsynkTask().execute(hosts);
+                    new TaskMainQRSSH().execute(hosts);
                     break;
             }
         }
@@ -125,7 +134,7 @@ public class MainQRSSH extends AppCompatActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
-        hostAdapter.notifyDataSetChanged();
+        baseAdapterHost.notifyDataSetChanged();
     }
 
     @Override
@@ -147,9 +156,9 @@ public class MainQRSSH extends AppCompatActivity {
                 int del = db.deleteHost(hosts.get(p).getId());
                 Log.i(TAG, "del " + del);
                 hosts.remove(p);
-                listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
+                listView.setAdapter(new BaseAdapterHost(MainQRSSH.this, hosts));
                 hosts = getHosts();
-                new QRSSHAsynkTask().execute(hosts);
+                new TaskMainQRSSH().execute(hosts);
                 return true;
             case CM_EDIT_HOST:
                 //need write code
@@ -196,21 +205,50 @@ public class MainQRSSH extends AppCompatActivity {
     }
 
 
-    public class QRSSHAsynkTask extends AsyncTask<ArrayList<Host>, Void, Boolean> {
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Log.i(TAG, " parent " + parent.getCount() + " position " + position + " id " + id);
+        host = hosts.get(position);
+        Log.i(TAG, hosts.get(position).getAlias());
+        Intent intent = new Intent(getApplicationContext(), ActivityHost.class);
+        startActivity(intent);
+    }
+
+    // ================= INTO CLASS ======================================
+    static public class TaskMainQRSSH extends AsyncTask<ArrayList<Host>, Void, Boolean> {
+
+        private static MainQRSSH activity;
+        private String TAG = "ssh_log";
+
+        public void link(MainQRSSH mainQRSSH) {
+            activity = mainQRSSH;
+            Log.i(TAG, "MainQRSHH Link get this: " + activity.hashCode());
+        }
+
+        public void unLink() {
+            activity = null;
+        }
+
         SSH ssh = SSH.getInstanceSSH();
         private ProgressDialog progressDialog;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            progressDialog = new ProgressDialog(MainQRSSH.this);
+            Log.i(TAG, "MainQRSHH onPreExecute: " + activity.hashCode());
+            progressDialog = new ProgressDialog(activity);
             progressDialog.setTitle("Check connect to ssh Host");
             progressDialog.setMessage("pleas wait");
             progressDialog.setButton(Dialog.BUTTON_POSITIVE, "Cancel", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                 }
             });
-            progressDialog.show();
+
+            try {
+                progressDialog.show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         @Override
@@ -228,8 +266,14 @@ public class MainQRSSH extends AppCompatActivity {
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
-            listView.setAdapter(new HostAdapter(MainQRSSH.this, hosts));
-            progressDialog.dismiss();
+            activity.listView.setAdapter(new BaseAdapterHost(activity, hosts));
+            try {
+                progressDialog.dismiss();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
     }
+// ================= INTO CLASS ======================================
 }

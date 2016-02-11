@@ -20,9 +20,10 @@ import java.util.Properties;
 public class SSH {
 
     private static SSH instanceSSH;
-    private int timeOut = 3000;
-    private String TAG = "ssh_log";
     private static Session session;
+
+    private int timeOut = 30000;
+    private String TAG = "ssh_log";
     private JSch jSch = new JSch();
     private Channel channelExe;
 
@@ -63,9 +64,7 @@ public class SSH {
         }
 
         Log.i(TAG, "open() session = " + session.hashCode());
-
         return session.isConnected();
-
     }
 
     public void openChannel(Session session) {
@@ -98,7 +97,7 @@ public class SSH {
 
 
     public void sendCommand(String command) {
-        if (channelExe!=null && !channelExe.isClosed()) {
+        if (channelExe != null && !channelExe.isClosed()) {
             ((ChannelExec) channelExe).setCommand(command);
             ((ChannelExec) channelExe).setErrStream(System.err);
             InputStream in = null;

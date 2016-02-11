@@ -15,7 +15,7 @@ import java.util.ArrayList;
 /**
  * Created by v.pelenskyi on 03.02.2016.
  */
-public class HostAdapter extends BaseAdapter {
+public class BaseAdapterHost extends BaseAdapter {
 
     private Context ctx;
     private LayoutInflater lInflater;
@@ -26,7 +26,7 @@ public class HostAdapter extends BaseAdapter {
     int imageUbnNoConnect = R.drawable.ubuntu;
     int image;
 
-    HostAdapter(Context context, ArrayList<Host> hosts) {
+    BaseAdapterHost(Context context, ArrayList<Host> hosts) {
         this.ctx = context;
         this.hosts = hosts;
         this.lInflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);

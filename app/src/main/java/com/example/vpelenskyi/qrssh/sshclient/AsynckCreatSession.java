@@ -24,18 +24,18 @@ import java.util.Properties;
 /**
  * Created by varenik on 30.01.16.
  */
-public class TestConnect extends AsyncTask<Host, Void, Boolean> {
+public class AsynckCreatSession extends AsyncTask<Host, Void, Boolean> {
 
     private String TAG = "ssh_log";
     JSch jSch;
     private Context context;
     ProgressDialog progressDialog;
 
-    public TestConnect(NewHost context) {
+    public AsynckCreatSession(NewHost context) {
         this.context = context;
     }
 
-    public TestConnect(ActivityHost context) {
+    public AsynckCreatSession(ActivityHost context) {
         this.context = context;
     }
 

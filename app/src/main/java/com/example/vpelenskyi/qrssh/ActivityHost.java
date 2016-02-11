@@ -14,7 +14,7 @@ import android.widget.Toast;
 
 import com.example.vpelenskyi.qrssh.host.Host;
 import com.example.vpelenskyi.qrssh.sshclient.SSH;
-import com.example.vpelenskyi.qrssh.sshclient.TestConnect;
+import com.example.vpelenskyi.qrssh.sshclient.AsynckCreatSession;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.jcraft.jsch.Session;
@@ -54,7 +54,7 @@ public class ActivityHost extends AppCompatActivity implements View.OnClickListe
         if (MainQRSSH.host != null) {
             tvAlias.setText(MainQRSSH.host.getAlias());
             tvHost.setText(MainQRSSH.host.getHost() + " : " + MainQRSSH.host.getPort());
-            new TestConnect(ActivityHost.this).execute(MainQRSSH.host);
+            new AsynckCreatSession(ActivityHost.this).execute(MainQRSSH.host);
             Log.i(TAG, MainQRSSH.host.toString());
         } else {
             onBackPressed();
