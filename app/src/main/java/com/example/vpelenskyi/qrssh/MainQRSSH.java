@@ -75,8 +75,23 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
         runTask();
     }
 
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        baseAdapterHost.notifyDataSetChanged();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        db.close();
+    }
+
     /**
-     *
+     * Run Into class TaskMainQRSSH extends AsyncTask
+     * he check connect to host
+     * he has method  getLastCustomNonConfigurationInstance()
+     * - what return object TaskMainQRSSH if
      */
     public void runTask() {
         TaskMainQRSSH = (TaskMainQRSSH) getLastCustomNonConfigurationInstance();
@@ -96,6 +111,7 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
         return TaskMainQRSSH;
     }
 
+    //get new Host
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -122,19 +138,6 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
             }
         }
 
-    }
-
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        db.close();
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        baseAdapterHost.notifyDataSetChanged();
     }
 
     @Override
@@ -183,6 +186,10 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * get all hosts from database and is to write them in ArrayList
+     * @return ArrayList<Host> hosts
+     */
     public ArrayList<Host> getHosts() {
         cursor = db.getAllData();
         hosts = new ArrayList<>();
@@ -204,21 +211,28 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
         return hosts;
     }
 
-
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Log.i(TAG, " parent " + parent.getCount() + " position " + position + " id " + id);
         host = hosts.get(position);
         Log.i(TAG, hosts.get(position).getAlias());
-        Intent intent = new Intent(getApplicationContext(), ActivityHost.class);
+        Intent intent = new Intent(getApplicationContext(), ActiveHost.class);
         startActivity(intent);
     }
 
+    /**
+     * This class is executed when deleting or adding new host
+     * and runs only ones when executed method onCreate
+     * This (TaskMainQRSSH) class use TaskCreateSession class what checks connect to host, and
+     * result (boolean) what returned is writes in object Host what is into the ArrayList<Host> hosts
+     */
     // ================= INTO CLASS ======================================
     static public class TaskMainQRSSH extends AsyncTask<ArrayList<Host>, Void, Boolean> {
 
-        private static MainQRSSH activity;
         private String TAG = "ssh_log";
+        private SSH ssh = SSH.getInstanceSSH();
+        private MainQRSSH activity;
+        private ProgressDialog progressDialog;
 
         public void link(MainQRSSH mainQRSSH) {
             activity = mainQRSSH;
@@ -229,8 +243,6 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
             activity = null;
         }
 
-        SSH ssh = SSH.getInstanceSSH();
-        private ProgressDialog progressDialog;
 
         @Override
         protected void onPreExecute() {

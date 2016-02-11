@@ -22,7 +22,7 @@ public class SSH {
     private static SSH instanceSSH;
     private static Session session;
 
-    private int timeOut = 30000;
+    private int timeOut = 5000;
     private String TAG = "ssh_log";
     private JSch jSch = new JSch();
     private Channel channelExe;
@@ -83,7 +83,7 @@ public class SSH {
             session.disconnect();
             Log.i(TAG, "close() connected session = " + session.isConnected());
             Log.i(TAG, "close() session = " + session.hashCode());
-            session = null;
+           // session = null;
         }
     }
 
@@ -100,6 +100,9 @@ public class SSH {
         if (channelExe != null && !channelExe.isClosed()) {
             ((ChannelExec) channelExe).setCommand(command);
             ((ChannelExec) channelExe).setErrStream(System.err);
+
+
+
             InputStream in = null;
             try {
                 in = channelExe.getInputStream();
@@ -130,10 +133,10 @@ public class SSH {
                         System.out.println("exit-status: " + channelExe.getExitStatus());
                         break;
                     }
-                    try {
-                        Thread.sleep(100);
-                    } catch (Exception ee) {
-                    }
+//                    try {
+//                        Thread.sleep(100);
+//                    } catch (Exception ee) {
+//                    }
                 }
             }
         }

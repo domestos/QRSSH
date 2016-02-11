@@ -14,7 +14,7 @@ import android.widget.Toast;
 
 import com.example.vpelenskyi.qrssh.host.Host;
 import com.example.vpelenskyi.qrssh.sshclient.SSH;
-import com.example.vpelenskyi.qrssh.sshclient.AsynckCreatSession;
+import com.example.vpelenskyi.qrssh.sshclient.TaskCreatSession;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.jcraft.jsch.Session;
@@ -24,7 +24,7 @@ import com.jcraft.jsch.Session;
  */
 
 
-public class ActivityHost extends AppCompatActivity implements View.OnClickListener {
+public class ActiveHost extends AppCompatActivity implements View.OnClickListener {
     private String TAG = "ssh_log";
     private TextView tvAlias;
     private TextView tvHost;
@@ -54,7 +54,7 @@ public class ActivityHost extends AppCompatActivity implements View.OnClickListe
         if (MainQRSSH.host != null) {
             tvAlias.setText(MainQRSSH.host.getAlias());
             tvHost.setText(MainQRSSH.host.getHost() + " : " + MainQRSSH.host.getPort());
-            new AsynckCreatSession(ActivityHost.this).execute(MainQRSSH.host);
+            new TaskCreatSession(ActiveHost.this).execute(MainQRSSH.host);
             Log.i(TAG, MainQRSSH.host.toString());
         } else {
             onBackPressed();
@@ -67,9 +67,8 @@ public class ActivityHost extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ssh.close();
+     //   ssh.close();
     }
-
 
     @Override
     public void onClick(View v) {

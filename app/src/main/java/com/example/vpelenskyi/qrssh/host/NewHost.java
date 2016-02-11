@@ -16,7 +16,7 @@ import android.widget.RadioGroup;
 
 import com.example.vpelenskyi.qrssh.R;
 import com.example.vpelenskyi.qrssh.database.Data;
-import com.example.vpelenskyi.qrssh.sshclient.AsynckCreatSession;
+import com.example.vpelenskyi.qrssh.sshclient.TaskCreatSession;
 
 /**
  * Created by v.pelenskyi on 22.12.2015.
@@ -171,8 +171,8 @@ public class NewHost extends AppCompatActivity implements View.OnClickListener {
 
     private void checkConnect() {
         if (validation()) {
-            AsynckCreatSession asynckCreatSession = new AsynckCreatSession(NewHost.this);
-            asynckCreatSession.execute(new Host(etAlias.getText().toString(),
+            TaskCreatSession taskCreatSession = new TaskCreatSession(NewHost.this);
+            taskCreatSession.execute(new Host(etAlias.getText().toString(),
                     etHost.getText().toString(),
                     etUsername.getText().toString(),
                     etPassword.getText().toString(),
