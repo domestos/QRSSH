@@ -38,6 +38,10 @@ public class SSH {
         return instanceSSH;
     }
 
+    public static void setSession(Session session) {
+        SSH.session = session;
+    }
+
     public boolean openSession(Host host) {
 
         try {
@@ -68,9 +72,11 @@ public class SSH {
     }
 
     public void openChannel(Session session) {
+
         if (session != null & session.isConnected()) {
             try {
                 channelExe = session.openChannel("exec");
+                Log.d(TAG, "CreateChannel : " + channelExe.hashCode());
             } catch (JSchException e) {
                 System.out.println("Error connect: " + e);
                 e.printStackTrace();
@@ -78,12 +84,18 @@ public class SSH {
         }
     }
 
+    public void closeChenal() {
+        if (channelExe != null && channelExe.isConnected()) {
+            channelExe.disconnect();
+        }
+    }
+
     public void close() {
         if (session != null && session.isConnected()) {
             session.disconnect();
-            Log.i(TAG, "close() connected session = " + session.isConnected());
-            Log.i(TAG, "close() session = " + session.hashCode());
-           // session = null;
+            Log.d(TAG, "close() connected session = " + session.isConnected());
+            Log.d(TAG, "close() session = " + session.hashCode());
+            // session = null;
         }
     }
 
@@ -91,16 +103,11 @@ public class SSH {
         return session;
     }
 
-    public void setSession(Session session) {
-        this.session = session;
-    }
-
-
-    public void sendCommand(String command) {
+    public int sendCommand(String command) {
         if (channelExe != null && !channelExe.isClosed()) {
             ((ChannelExec) channelExe).setCommand(command);
             ((ChannelExec) channelExe).setErrStream(System.err);
-
+            Log.d(TAG, "sendCommand in channel " + channelExe.hashCode());
 
 
             InputStream in = null;
@@ -129,17 +136,21 @@ public class SSH {
                         e.printStackTrace();
                     }
                     if (channelExe.isClosed()) {
-                        Log.i(TAG, "exit-status: " + channelExe.getExitStatus());
-                        System.out.println("exit-status: " + channelExe.getExitStatus());
+                        Log.d(TAG, "exit-status: " + channelExe.getExitStatus());
+                        // System.out.println("exit-status: " + channelExe.getExitStatus());
                         break;
                     }
-//                    try {
-//                        Thread.sleep(100);
-//                    } catch (Exception ee) {
-//                    }
+                    try {
+                        Thread.sleep(100);
+                    } catch (Exception ee) {
+                    }
                 }
             }
         }
-
+        if (channelExe != null) {
+            return channelExe.getExitStatus();
+        } else {
+            return 404;
+        }
     }
 }

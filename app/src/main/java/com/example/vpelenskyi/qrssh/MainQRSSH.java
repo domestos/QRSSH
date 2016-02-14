@@ -29,6 +29,7 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
 
     private String TAG = "ssh_log";
     private ListView listView;
+    private SSH ssh = SSH.getInstanceSSH();
 
     final int CM_DELETE_HOST = 0;
     final int CM_EDIT_HOST = 1;
@@ -37,7 +38,7 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
     public static ArrayList<Host> hosts;
     public static Host host;
 
-    private TaskMainQRSSH TaskMainQRSSH;
+    private TaskMainQRSSH taskMainQRSSH;
     private BaseAdapterHost baseAdapterHost;
     private Cursor cursor;
     private Data db;
@@ -53,6 +54,7 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
         if (hosts == null) {
             hosts = getHosts();
         }
+
         //TOOLBAR
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -76,8 +78,16 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+    }
+
+    @Override
     protected void onRestart() {
         super.onRestart();
+        ssh.close();
+        ssh.setSession(null);
         baseAdapterHost.notifyDataSetChanged();
     }
 
@@ -94,21 +104,21 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
      * - what return object TaskMainQRSSH if
      */
     public void runTask() {
-        TaskMainQRSSH = (TaskMainQRSSH) getLastCustomNonConfigurationInstance();
-        if (TaskMainQRSSH == null) {
-            TaskMainQRSSH = new TaskMainQRSSH();
+        taskMainQRSSH = (TaskMainQRSSH) getLastCustomNonConfigurationInstance();
+        if (taskMainQRSSH == null) {
+            taskMainQRSSH = new TaskMainQRSSH();
         }
-        TaskMainQRSSH.link(this);
-        if (TaskMainQRSSH.getStatus() != AsyncTask.Status.RUNNING &&
-                TaskMainQRSSH.getStatus() != AsyncTask.Status.FINISHED) {
-            TaskMainQRSSH.execute(hosts);
+        taskMainQRSSH.link(this);
+        if (taskMainQRSSH.getStatus() != AsyncTask.Status.RUNNING &&
+                taskMainQRSSH.getStatus() != AsyncTask.Status.FINISHED) {
+            taskMainQRSSH.execute(hosts);
         }
     }
 
     @Override
     public Object onRetainCustomNonConfigurationInstance() {
-        TaskMainQRSSH.unLink();
-        return TaskMainQRSSH;
+        taskMainQRSSH.unLink();
+        return taskMainQRSSH;
     }
 
     //get new Host
@@ -133,7 +143,10 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
                     hosts = getHosts();
                     Log.i(TAG, "onActivityResult = size cursor " + cursor.getCount());
                     Log.i(TAG, "onActivityResult = size ArrayLisy " + hosts.size());
-                    new TaskMainQRSSH().execute(hosts);
+                    taskMainQRSSH = new TaskMainQRSSH();
+                    taskMainQRSSH.link(this);
+                    taskMainQRSSH.execute(hosts);
+
                     break;
             }
         }
@@ -161,7 +174,9 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
                 hosts.remove(p);
                 listView.setAdapter(new BaseAdapterHost(MainQRSSH.this, hosts));
                 hosts = getHosts();
-                new TaskMainQRSSH().execute(hosts);
+                taskMainQRSSH = new TaskMainQRSSH();
+                taskMainQRSSH.link(this);
+                taskMainQRSSH.execute(hosts);
                 return true;
             case CM_EDIT_HOST:
                 //need write code
@@ -188,6 +203,7 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
 
     /**
      * get all hosts from database and is to write them in ArrayList
+     *
      * @return ArrayList<Host> hosts
      */
     public ArrayList<Host> getHosts() {
@@ -247,7 +263,7 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            Log.i(TAG, "MainQRSHH onPreExecute: " + activity.hashCode());
+            //  Log.i(TAG, "MainQRSHH onPreExecute: " + activity.hashCode());
             progressDialog = new ProgressDialog(activity);
             progressDialog.setTitle("Check connect to ssh Host");
             progressDialog.setMessage("pleas wait");
