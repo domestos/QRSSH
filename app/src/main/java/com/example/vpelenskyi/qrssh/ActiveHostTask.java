@@ -32,6 +32,27 @@ public class ActiveHostTask extends AsyncTask<Host, Integer, Boolean> {
         this.activeHost = null;
     }
 
+    /**
+     * Mtehod checkSession():
+     * restart (init) session if she was lost (disconnect)
+     */
+    private void checkSession(Host host) {
+        if (session == null) {
+            Log.i(TAG, "session == null");
+            session = ssh.getSession();
+        }
+        if (session != null) {
+            if (!session.isConnected()) {
+                Log.i(TAG, "isConnected()  = " + session.isConnected());
+                ssh.openSession(host);
+            }
+        }
+    }
+
+    /**
+     * init url, ssh
+     * locks the button and showing progressDialog
+     */
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
@@ -41,63 +62,46 @@ public class ActiveHostTask extends AsyncTask<Host, Integer, Boolean> {
         activeHost.showDialog(true);
     }
 
+    /**
+     * Get session, openChannel, sendCommand
+     * @param params Host
+     * @return boolean - result connect to SSH host
+     */
     @Override
     protected Boolean doInBackground(Host... params) {
         int result = 404;
         for (Host host : params) {
-            command = createCommand(host);
+            command = createCommand(host, url);
 //         restart (init) session if she was lost (disconnect)
-            if (session == null) {
-                Log.i(TAG, "session == null");
-                session = ssh.getSession();
-            }
-            if (session != null) {
-                if (!session.isConnected()) {
-                    Log.i(TAG, "isConnected()  = " + session.isConnected());
-                    ssh.openSession(host);
-                }
-            }
-
-        }
-        if (isCancelled()) {
-            return false;
+            checkSession(host);
         }
         session = ssh.getSession();
-
         Log.i(TAG, "Status Session " + session.isConnected());
         ssh.openChannel(session);
-        if (isCancelled()) {
-            return false;
-        }
-        if (url != null & !url.isEmpty()) {
-            Log.i(TAG, "command = " + command);
-            result = ssh.sendCommand(command);
-        } else {
-            Log.i(TAG, "url is empty");
-        }
-
+        result = ssh.sendCommand(command);
         Log.i(TAG, " AsynkActivityHost ssh.getSession() " + ssh.getSession().hashCode());
         Log.i(TAG, " AsynkActivityHost ssh " + ssh.hashCode());
         publishProgress(session.hashCode(), result);
         return session.isConnected();
-
-
     }
 
+    /**
+     * Shows result method sendCommand in UI
+     * @param values int[0] result (if return 0 - successful another error)
+     */
     @Override
     protected void onProgressUpdate(Integer... values) {
-
         super.onProgressUpdate(values);
-
         activeHost.setTitle("Session = " + values[0]);
         if (values[1] == 0) {
-            Toast toast = new Toast(activeHost);
-            toast.setGravity(Gravity.TOP, 10, 0);
-            toast.makeText(activeHost, "SUCCESSFUL", Toast.LENGTH_LONG).show();
+            showResult("SUCCESSFUL");
         } else {
-            Toast.makeText(activeHost, "ERROR", Toast.LENGTH_LONG).show();
-
+            showResult("ERROR");
         }
+    }
+
+    private void showResult(String string) {
+        Toast.makeText(activeHost, string, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -112,23 +116,38 @@ public class ActiveHostTask extends AsyncTask<Host, Integer, Boolean> {
         activeHost.showDialog(false);
     }
 
+    /**
+     * unlocks button
+     */
     @Override
     protected void onCancelled() {
         activeHost.findViewById(R.id.btnSendUrl).setEnabled(true);
         super.onCancelled();
     }
 
-    private String createCommand(Host host) {
-        switch (host.getOs()) {
-            case Host.OS_UBUNTU:
+    /**
+     * looking what os uses will be to create command
+     * @param host Host
+     * @param url String
+     * @return  String command
+     */
+    private String createCommand(Host host, String url) {
+        if (url != null && !url.isEmpty()) {
+            switch (host.getOs()) {
+                case Host.OS_UBUNTU:
 //                command = "DISPLAY=:0 firefox \"" + url + "\"";
-                command = "DISPLAY=:0 nohup gnome-open \"" + url + "\"";
+                    command = "DISPLAY=:0 nohup gnome-open \"" + url + "\"";
 //                    command = "DISPLAY=:0 gvfs-open  \"" + url + "\"";
 //                    command = "DISPLAY=:0 x-www-browser  \"" + url + "\"";
-                break;
-            case Host.OS_WINDOWS:
-                command = "cmd.exe /u /c \"start " + url + "\"";
-                break;
+                    break;
+                case Host.OS_WINDOWS:
+                    command = "cmd.exe /u /c \"start " + url + "\"";
+                    break;
+            }
+            Log.i(TAG, "command = " + command);
+        } else {
+            command = null;
+            Log.i(TAG, "url is empty");
         }
         return command;
     }

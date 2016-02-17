@@ -107,7 +107,7 @@ public class SSH {
         if (channelExe != null && !channelExe.isClosed()) {
             ((ChannelExec) channelExe).setCommand(command);
             ((ChannelExec) channelExe).setErrStream(System.err);
-            Log.d(TAG, "sendCommand in channel " + channelExe.hashCode());
+            Log.d(TAG, "setCommand in channel " + channelExe.hashCode());
 
 
             InputStream in = null;
