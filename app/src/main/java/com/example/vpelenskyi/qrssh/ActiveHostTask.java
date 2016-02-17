@@ -23,6 +23,7 @@ public class ActiveHostTask extends AsyncTask<Host, Integer, Boolean> {
     private String command = "";
     private SSH ssh;
     private Session session;
+    private boolean booleanExit;
 
     public void link(ActiveHost activeHost) {
         this.activeHost = activeHost;
@@ -64,29 +65,61 @@ public class ActiveHostTask extends AsyncTask<Host, Integer, Boolean> {
 
     /**
      * Get session, openChannel, sendCommand
+     *
      * @param params Host
      * @return boolean - result connect to SSH host
      */
     @Override
     protected Boolean doInBackground(Host... params) {
-        int result = 404;
+
         for (Host host : params) {
             command = createCommand(host, url);
 //         restart (init) session if she was lost (disconnect)
             checkSession(host);
         }
         session = ssh.getSession();
-        Log.i(TAG, "Status Session " + session.isConnected());
-        ssh.openChannel(session);
-        result = ssh.sendCommand(command);
-        Log.i(TAG, " AsynkActivityHost ssh.getSession() " + ssh.getSession().hashCode());
-        Log.i(TAG, " AsynkActivityHost ssh " + ssh.hashCode());
-        publishProgress(session.hashCode(), result);
+
+        Thread threadExit = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    TimeUnit.SECONDS.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                int result = 404;
+                Log.i(TAG, "Status Session " + session.isConnected());
+                ssh.openChannel(session);
+                result = ssh.sendCommand(command);
+                Log.i(TAG, " AsynkActivityHost ssh.getSession() " + ssh.getSession().hashCode());
+                Log.i(TAG, " AsynkActivityHost ssh " + ssh.hashCode());
+                publishProgress(session.hashCode(), result);
+
+                booleanExit = true;
+            }
+        });
+
+        threadExit.start();
+        //remove the load from the CPU
+        while (true) {
+            try {
+                TimeUnit.MILLISECONDS.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            if (booleanExit || isCancelled()) {
+                Log.i(TAG, "i finished");
+                break;
+            }
+        }
+
         return session.isConnected();
     }
 
     /**
      * Shows result method sendCommand in UI
+     *
      * @param values int[0] result (if return 0 - successful another error)
      */
     @Override
@@ -104,6 +137,11 @@ public class ActiveHostTask extends AsyncTask<Host, Integer, Boolean> {
         Toast.makeText(activeHost, string, Toast.LENGTH_LONG).show();
     }
 
+    /**
+     * unlocks button
+     *
+     * @param aBoolean
+     */
     @Override
     protected void onPostExecute(Boolean aBoolean) {
         super.onPostExecute(aBoolean);
@@ -127,9 +165,10 @@ public class ActiveHostTask extends AsyncTask<Host, Integer, Boolean> {
 
     /**
      * looking what os uses will be to create command
+     *
      * @param host Host
-     * @param url String
-     * @return  String command
+     * @param url  String
+     * @return String command
      */
     private String createCommand(Host host, String url) {
         if (url != null && !url.isEmpty()) {
