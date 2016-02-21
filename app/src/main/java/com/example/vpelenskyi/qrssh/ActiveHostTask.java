@@ -3,7 +3,6 @@ package com.example.vpelenskyi.qrssh;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.view.Gravity;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -83,23 +82,30 @@ public class ActiveHostTask extends AsyncTask<Host, Integer, Boolean> {
             @Override
             public void run() {
                 try {
-                    TimeUnit.SECONDS.sleep(10);
-                } catch (InterruptedException e) {
+                    int result = 404;
+                    Log.i(TAG, "Status Session " + session.isConnected());
+                    ssh.openChannel(session);
+                    result = ssh.sendCommand(command);
+                    Log.i(TAG, " AsynkActivityHost ssh.getSession() " + ssh.getSession().hashCode());
+                    Log.i(TAG, " AsynkActivityHost ssh " + ssh.hashCode());
+                    publishProgress(session.hashCode(), result);
+                    booleanExit = true;
+                } catch (ThreadDeath e) {
+                    Log.i(TAG, "i get exception ThreadDeath");
+                    ssh.getSession().disconnect();
+                    booleanExit = true;
                     e.printStackTrace();
                 }
-                int result = 404;
-                Log.i(TAG, "Status Session " + session.isConnected());
-                ssh.openChannel(session);
-                result = ssh.sendCommand(command);
-                Log.i(TAG, " AsynkActivityHost ssh.getSession() " + ssh.getSession().hashCode());
-                Log.i(TAG, " AsynkActivityHost ssh " + ssh.hashCode());
-                publishProgress(session.hashCode(), result);
-
-                booleanExit = true;
             }
         });
 
         threadExit.start();
+        waitExit(threadExit);
+
+        return session.isConnected();
+    }
+
+    private void waitExit(Thread threadExit) {
         //remove the load from the CPU
         while (true) {
             try {
@@ -108,13 +114,16 @@ public class ActiveHostTask extends AsyncTask<Host, Integer, Boolean> {
                 e.printStackTrace();
             }
 
-            if (booleanExit || isCancelled()) {
+            if (booleanExit) {
                 Log.i(TAG, "i finished");
                 break;
             }
+            if (isCancelled()) {
+                Log.i(TAG, "Stop Thread");
+                threadExit.interrupt();
+                break;
+            }
         }
-
-        return session.isConnected();
     }
 
     /**

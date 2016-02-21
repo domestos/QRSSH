@@ -17,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.vpelenskyi.qrssh.database.Data;
 import com.example.vpelenskyi.qrssh.host.Host;
@@ -35,7 +36,7 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
     final int CM_EDIT_HOST = 1;
     private int INT_ADD_HOST = 1;
 
-    public static ArrayList<Host> hosts;
+    public static ArrayList<Host> hosts;   //singleton hosts
     public static Host host;
 
     private TaskMainQRSSH taskMainQRSSH;
@@ -47,47 +48,34 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_qrssh);
-        //OPEN DATA BASE
         db = new Data(this);
         db.open();
-        //singleton hosts
         if (hosts == null) {
             hosts = getHosts();
         }
-
-        //TOOLBAR
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        //FLOATIONG ACTION BUTTON
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.addHost);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), NewHost.class);
-                startActivityForResult(intent, INT_ADD_HOST);
-            }
-        });
-        //find, show, setMenu, setOnClickItem ViewList
+        initFloatingActionButton();  // FLOATIONG ACTION BUTTON
         listView = (ListView) findViewById(R.id.lvHost);
         baseAdapterHost = new BaseAdapterHost(MainQRSSH.this, hosts);
         listView.setAdapter(baseAdapterHost);
         registerForContextMenu(listView);
         listView.setOnItemClickListener(this);
         //Run AsyncTask only one when open APP
-        runTask();
+        singleRunTask();
     }
+
 
     @Override
     protected void onResume() {
         super.onResume();
-
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
-        ssh.close();
-        ssh.setSession(null);
+        Log.i(TAG, "onRestart close session");
+        ssh.close();  //make give exception
         baseAdapterHost.notifyDataSetChanged();
     }
 
@@ -98,30 +86,24 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
     }
 
     /**
-     * Run Into class TaskMainQRSSH extends AsyncTask
-     * he check connect to host
-     * he has method  getLastCustomNonConfigurationInstance()
-     * - what return object TaskMainQRSSH if
+     * Shows the FloatingActionButton and shows new Intent if clicked on the button
+     * intent returns object data what has info about new host
      */
-    public void runTask() {
-        taskMainQRSSH = (TaskMainQRSSH) getLastCustomNonConfigurationInstance();
-        if (taskMainQRSSH == null) {
-            taskMainQRSSH = new TaskMainQRSSH();
-        }
-        taskMainQRSSH.link(this);
-        if (taskMainQRSSH.getStatus() != AsyncTask.Status.RUNNING &&
-                taskMainQRSSH.getStatus() != AsyncTask.Status.FINISHED) {
-            taskMainQRSSH.execute(hosts);
-        }
+    private void initFloatingActionButton() {
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.addHost);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), NewHost.class);
+                startActivityForResult(intent, INT_ADD_HOST);
+            }
+        });
     }
 
-    @Override
-    public Object onRetainCustomNonConfigurationInstance() {
-        taskMainQRSSH.unLink();
-        return taskMainQRSSH;
-    }
-
-    //get new Host
+    /**
+     * gets a new Host from Activity NewHost.class (startActivityForResult(intent, INT_ADD_HOST);)
+     * and adds this host into ArrayList after that shows new list
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -129,28 +111,75 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case 1:
-                    hosts.add(new Host(
-                            data.getStringExtra("alias"),
-                            data.getStringExtra("host"),
-                            data.getIntExtra("port", 22),
-                            data.getStringExtra("user"),
-                            data.getStringExtra("pass"),
-                            data.getIntExtra("os", 0),
-                            false,
-                            data.getIntExtra("id", -1)));
+                    hosts = addNewHost(data);
                     Log.i(TAG, "successful add host");
+                    //shows not checked host
                     listView.setAdapter(new BaseAdapterHost(MainQRSSH.this, hosts));
+                    //update the hosts. checks and shows hosts again
                     hosts = getHosts();
                     Log.i(TAG, "onActivityResult = size cursor " + cursor.getCount());
                     Log.i(TAG, "onActivityResult = size ArrayLisy " + hosts.size());
-                    taskMainQRSSH = new TaskMainQRSSH();
-                    taskMainQRSSH.link(this);
-                    taskMainQRSSH.execute(hosts);
-
+                    createAndRunTask(hosts);
                     break;
             }
         }
 
+    }
+
+    /**
+     * Run Into class TaskMainQRSSH extends AsyncTask what check connect to host
+     */
+    public void singleRunTask() {
+        //returns object taskMainQRSSH if he was init earlier
+        taskMainQRSSH = (TaskMainQRSSH) getLastCustomNonConfigurationInstance();
+        if (taskMainQRSSH == null) {
+            taskMainQRSSH = new TaskMainQRSSH();
+        }
+        taskMainQRSSH.link(this);
+        //run only if this first start
+        if (taskMainQRSSH.getStatus() != AsyncTask.Status.RUNNING &&
+                taskMainQRSSH.getStatus() != AsyncTask.Status.FINISHED) {
+            Log.i(TAG, "Start on Creat  taskMainQRSSH.execute(hosts)");
+            taskMainQRSSH.execute(hosts);
+        }
+    }
+
+    /**
+     * after returning  screen, clears old activity(content =null) into TaskMainQRSSH.class
+     * and returns this class
+     *
+     * @return taskMainQRSSH - object TaskMainQRSSH.class what was been initialized earlier
+     */
+    @Override
+    public Object onRetainCustomNonConfigurationInstance() {
+        taskMainQRSSH.unLink(); //set context =null
+        return taskMainQRSSH;
+    }
+
+
+    private void createAndRunTask(ArrayList<Host> hosts) {
+        taskMainQRSSH = new TaskMainQRSSH();
+        taskMainQRSSH.link(this);
+        taskMainQRSSH.execute(hosts);
+    }
+
+    /**
+     * Gets info from data what returned from Intent, creates new host and adds him into ArrayList<Host>
+     *
+     * @param data - contains info about a new host
+     * @return hosts - ArrayList<Host>
+     */
+    private ArrayList<Host> addNewHost(Intent data) {
+        hosts.add(new Host(
+                data.getStringExtra("alias"),
+                data.getStringExtra("host"),
+                data.getIntExtra("port", 22),
+                data.getStringExtra("user"),
+                data.getStringExtra("pass"),
+                data.getIntExtra("os", 0),
+                false,
+                data.getIntExtra("id", 404)));
+        return hosts;
     }
 
     @Override
@@ -174,9 +203,7 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
                 hosts.remove(p);
                 listView.setAdapter(new BaseAdapterHost(MainQRSSH.this, hosts));
                 hosts = getHosts();
-                taskMainQRSSH = new TaskMainQRSSH();
-                taskMainQRSSH.link(this);
-                taskMainQRSSH.execute(hosts);
+                createAndRunTask(hosts);
                 return true;
             case CM_EDIT_HOST:
                 //need write code
@@ -185,21 +212,7 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
         return super.onContextItemSelected(item);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main_qrssh, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     /**
      * get all hosts from database and is to write them in ArrayList
@@ -227,6 +240,13 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
         return hosts;
     }
 
+
+    /***
+     * @param parent
+     * @param view
+     * @param position position view in listView
+     * @param id       equals position
+     */
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Log.i(TAG, " parent " + parent.getCount() + " position " + position + " id " + id);
@@ -236,6 +256,23 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
         startActivity(intent);
     }
 
+    //=================Not use now ===========================
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main_qrssh, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    //=================Not use now ===========================
     /**
      * This class is executed when deleting or adding new host
      * and runs only ones when executed method onCreate
@@ -252,7 +289,7 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
 
         public void link(MainQRSSH mainQRSSH) {
             activity = mainQRSSH;
-            Log.i(TAG, "MainQRSHH Link get this: " + activity.hashCode());
+            Log.i(TAG, "MainQRSHH Link get activity: " + activity.hashCode());
         }
 
         public void unLink() {
@@ -263,20 +300,21 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            //  Log.i(TAG, "MainQRSHH onPreExecute: " + activity.hashCode());
-            progressDialog = new ProgressDialog(activity);
-            progressDialog.setTitle("Check connect to ssh Host");
-            progressDialog.setMessage("pleas wait");
-            progressDialog.setButton(Dialog.BUTTON_POSITIVE, "Cancel", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                }
-            });
-
-            try {
-                progressDialog.show();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            Toast.makeText(activity, "begin check connect to hosts", Toast.LENGTH_SHORT).show();
+//            //  Log.i(TAG, "MainQRSHH onPreExecute: " + activity.hashCode());
+//            progressDialog = new ProgressDialog(activity);
+//            progressDialog.setTitle("Check connect to ssh Host");
+//            progressDialog.setMessage("pleas wait");
+//            progressDialog.setButton(Dialog.BUTTON_POSITIVE, "Cancel", new DialogInterface.OnClickListener() {
+//                public void onClick(DialogInterface dialog, int which) {
+//                }
+//            });
+//
+//            try {
+//                progressDialog.show();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
         }
 
         @Override
@@ -285,6 +323,7 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
                 for (int i = 0; arrayList.size() > i; i++) {
                     arrayList.get(i).setHostConnect(ssh.openSession(arrayList.get(i)));
                     Log.i(TAG, arrayList.get(i).toString());
+                    publishProgress();
                     ssh.close();
                 }
             }
@@ -292,14 +331,22 @@ public class MainQRSSH extends AppCompatActivity implements AdapterView.OnItemCl
         }
 
         @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+            activity.listView.setAdapter(new BaseAdapterHost(activity, hosts));
+        }
+
+        @Override
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
             activity.listView.setAdapter(new BaseAdapterHost(activity, hosts));
-            try {
-                progressDialog.dismiss();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            Toast.makeText(activity, "finished checked..", Toast.LENGTH_SHORT).show();
+//
+//  try {
+//                progressDialog.dismiss();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
 
         }
     }
